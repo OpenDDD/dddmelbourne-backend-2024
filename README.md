@@ -19,8 +19,16 @@ This project contains backend functionality to run the DDD conferences, includin
 * Dotnet Core 3.1 (<https://dotnet.microsoft.com/en-us/download/dotnet/3.1>)
 * Azure Functions Core Tools(<https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local>)
 
+```
+ 
+ azurite -s -l /home/dimka/temp/azurite/ -d /home/dimka/temp/azurite/debug.log
+```
+
 ### Commands
 
+Once: `npm install -g azurite`
+
+* `azurite -s -l /home/dimka/temp/azurite/ -d /home/dimka/temp/azurite/debug.log`
 * `cd DDD.Functions && func host start --build --debug --verbose`
 
 ## Structure
