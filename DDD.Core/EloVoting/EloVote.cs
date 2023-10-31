@@ -5,7 +5,7 @@ namespace DDD.Core.EloVoting
     {
         public EloVote() { }
 
-        public EloVote(string conferenceInstance, string voteId, string winnerSessionId, string loserSessionId, bool isDraw, string ipAddress, string voterSessionId)
+        public EloVote(string conferenceInstance, string voteId, string winnerSessionId, string loserSessionId, bool isDraw, string ipAddress, string voterSessionId, string voterTicket, string voterLastname)
         {
             PartitionKey = conferenceInstance;
             RowKey = voteId;
@@ -14,6 +14,8 @@ namespace DDD.Core.EloVoting
             IsDraw = isDraw;
             IpAddress = ipAddress;
             VoterSessionId = voterSessionId;
+            VoterTicket = voterTicket;
+            VoterLastname = voterLastname;
         }
 
         public string WinnerSessionId { get; set; }
@@ -21,6 +23,8 @@ namespace DDD.Core.EloVoting
         public bool IsDraw { get; set; }
         public string IpAddress { get; set; }
         public string VoterSessionId { get; set; }
+        public string VoterTicket { get; set; }
+        public string VoterLastname { get; set; }
         public string VoteId => RowKey;
     }
 }

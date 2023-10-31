@@ -100,7 +100,7 @@ namespace DDD.Functions
 
             // Save vote
             log.LogInformation("Successfully received elo vote with Id {winnerVoteId}; persisting...", winnerVoteId);
-            var eloVoteToPersist = new EloVote(conferenceYear, winnerVoteId, winnerSessionId, loserSessionId, vote.IsDraw, ip, vote.VoterSessionId);
+            var eloVoteToPersist = new EloVote(conferenceYear, winnerVoteId, winnerSessionId, loserSessionId, vote.IsDraw, ip, vote.VoterSessionId, vote.VoterTicket, vote.VoterLastname);
             await repo.CreateAsync(eloVoteToPersist);
 
             return new StatusCodeResult((int)HttpStatusCode.NoContent);
@@ -112,5 +112,7 @@ namespace DDD.Functions
         public string LoserSessionId { get; set; }
         public bool IsDraw { get; set; }
         public string VoterSessionId { get; set; }
+        public string VoterTicket { get; set; }
+        public string VoterLastname { get; set; }
     }
 }

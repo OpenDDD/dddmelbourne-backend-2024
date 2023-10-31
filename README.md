@@ -24,11 +24,21 @@ This project contains backend functionality to run the DDD conferences, includin
  azurite -s -l /home/dimka/temp/azurite/ -d /home/dimka/temp/azurite/debug.log
 ```
 
+[Install CosmosDB emulator](https://learn.microsoft.com/en-us/azure/cosmos-db/emulator)
+
 ### Commands
 
 Once: `npm install -g azurite`
 
 * `azurite -s -l /home/dimka/temp/azurite/ -d /home/dimka/temp/azurite/debug.log`
+* ```
+docker run \
+    --publish 8081:8081 \
+    --publish 10250-10255:10250-10255 \
+    --interactive \
+    --tty \
+    mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest    
+```
 * `cd DDD.Functions && func host start --build --debug --verbose`
 
 ## Structure
