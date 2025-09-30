@@ -39,6 +39,7 @@ docker run \
     --tty \
     mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest    
 ```
+
 * `cd DDD.Functions && func host start --build --debug --verbose`
 
 ## Structure
@@ -200,3 +201,51 @@ The logic app would roughly have:
 * `When there are messages in a queue` trigger to the `attendees` queue of the `{conferencename}functions{environment}` storage account
 * `Post message` action (for Teams/Slack) with something like `@{json(trigger().outputs.body.MessageText).name} is attending @{json(trigger().outputs.body.MessageText).event} as @{json(trigger().outputs.body.MessageText).ticketClass} (orderid: @{json(trigger().outputs.body.MessageText).orderId}). @{json(trigger().outputs.body.MessageText).qtySold}/@{json(trigger().outputs.body.MessageText).totalQty} @{json(trigger().outputs.body.MessageText).ticketClass} tickets taken.`
 * `Delete message` action for the `attendees` queue with the Message ID and Pop Receipt from the trigger
+
+## Prepping for a new year conference
+
+You'd usually would do this before voting opens, that's where the backend needed.
+
+1. Recreate Cosmos Tables in `dddmelb2024`, so they are empty
+  * Set maximum 1000 RSU, so they aren't expensive
+  * You can leave feedback tables there
+
+![Creating new cosmos table](./docs/new-cosmos-table.png)
+
+2. Cleanup Cosmos NoSQL `dddmelb2024nosql`
+  * delete and re-create `votesessions` table, so we can get rid of the data
+  * use `/pk` for primary key
+
+![new nosql cosmos table](docs/new-cosmos-nosql-table.png)
+
+
+3. Create two sessionize keys: one for `voting` and one for `agenda`
+  * For `voting` pick:
+    * Format - JSON
+    * Includes Sessions - All except declined
+  * For `agenda` pick:
+    * Format - JSON
+    * Includes Sessions - Accepted
+    * Tick everything from the screenshot below
+
+![Sessionize API options for Agenda](docs/agenda-sessionize-api-options.png)
+
+
+![Sessionize API keys](docs/sessionize-api-keys.png)
+
+4. Update environment variables in Functions App `dddmelb-2024`
+  * Go to Functions -> Settings -> Environment Variables
+  * `SessionizeApiKey` - use voting API id
+  * `SessionizeAgendaApiKey` - use agenda API id
+  * `StopSyncingAgendaFrom` - conference date
+  * `StopSyncingSessionsFrom` - conference date
+  * `SubmissionsAvailableTo` - conference date
+  * `VotingAvailableTo` - voting close date 
+
+![app variables](docs/app-variables.png)
+
+5. Wait a bit for functions to run and check `Submissions` and `Submitters` tables. They should contain new data.
+
+6. Run website locally and check that voting works
+
+7. Once done some test voting, check that data is populated in "EloVotes" table.
