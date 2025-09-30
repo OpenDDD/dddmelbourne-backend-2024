@@ -30,8 +30,12 @@ This project contains backend functionality to run the DDD conferences, includin
 
 Once: `npm install -g azurite`
 
-* `azurite -s -l /home/dimka/temp/azurite/ -d /home/dimka/temp/azurite/debug.log`
-* ```
+
+```
+azurite -s -l /home/dimka/temp/azurite/ -d /home/dimka/temp/azurite/debug.log
+```
+
+```
 docker run \
     --publish 8081:8081 \
     --publish 10250-10255:10250-10255 \
@@ -40,7 +44,9 @@ docker run \
     mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest    
 ```
 
-* `cd DDD.Functions && func host start --build --debug --verbose`
+```
+cd DDD.Functions && func host start --build --debug --verbose
+```
 
 ## Structure
 
