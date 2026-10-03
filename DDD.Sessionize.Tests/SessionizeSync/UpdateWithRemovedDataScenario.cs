@@ -8,59 +8,58 @@ using DDD.Sessionize.Tests.TestHelpers;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
-using Xunit.Abstractions;
 using Scenario = DDD.Sessionize.Tests.TestHelpers.Scenario;
 
 namespace DDD.Sessionize.Tests.SessionizeSync
 {
     public class UpdateWithRemovedDataScenario : Scenario
     {
-        public void GivenEmptyReadModel()
+        private void GivenEmptyReadModel()
         {
             _sessionRepository = new TableStorageRepositoryMock<SessionEntity>();
             _presenterRepository = new TableStorageRepositoryMock<PresenterEntity>();
         }
 
-        public void AndGivenSessionizeHasPresentersAndSessions()
+        private void AndGivenSessionizeHasPresentersAndSessions()
         {
             _sessionizeApiClient = SessionizeApiClientMock.Get(
                 GetResource("EmptyReadModelScenarioMock.json"));
         }
 
-        public async Task WhenPerformingSync()
+        private async Task WhenPerformingSync()
         {
             await SyncService.Sync(_sessionizeApiClient, _sessionRepository, _presenterRepository,  _logger, _dateTimeProvider, "2018");
         }
 
-        public void AndGivenSessionizeHasAnUpdateThatRemovesADataField()
+        private void AndGivenSessionizeHasAnUpdateThatRemovesADataField()
         {
             _sessionizeApiClient = SessionizeApiClientMock.Get(
                 GetResource("UpdateWithRemovedDataScenarioMock.json"));
         }
 
-        public async Task WhenPerformingSubsequentSync()
+        private async Task WhenPerformingSubsequentSync()
         {
             _dateTimeProvider = new StaticDateTimeProvider(_dateTimeProvider.Now().AddDays(1));
             await SyncService.Sync(_sessionizeApiClient, _sessionRepository, _presenterRepository, _logger, _dateTimeProvider, "2018");
         }
 
-        public async Task ThenTheReadModelIsPopulated()
+        private async Task ThenTheReadModelIsPopulated()
         {
             _readModel = (await _sessionRepository.GetAllAsync("2018")).ToArray();
             _readModel.ShouldNotBeEmpty();
         }
 
-        public async Task AndTheReadModelHasTheCorrectPresenters()
+        private async Task AndTheReadModelHasTheCorrectPresenters()
         {
             Approve(SessionOrPresenterAssertions.PreparePresentersForApproval((await _presenterRepository.GetAllAsync("2018")).ToArray()), "json");
         }
 
-        public void AndTheReadModelHasTheCorrectSessions()
+        private void AndTheReadModelHasTheCorrectSessions()
         {
             Approve(SessionOrPresenterAssertions.PrepareSessionsForApproval(_readModel), "json");
         }
 
-        public void AndTheLoggerOutputIsCorrect()
+        private void AndTheLoggerOutputIsCorrect()
         {
             Approve(_logger.ToString());
         }

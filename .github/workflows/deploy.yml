@@ -34,7 +34,7 @@ jobs:
 
       - run: dotnet build DDD.sln --configuration Release
 
-      - run: dotnet test DDD.Sessionize.Tests --configuration Release --no-build
+      - run: dotnet test --project DDD.Sessionize.Tests --configuration Release --no-build
 
       - run: dotnet publish DDD.Functions/DDD.Functions.csproj --configuration Release --no-build --output ${{ env.PUBLISH_PATH }}
 

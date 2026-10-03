@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Runtime.CompilerServices;
-using Shouldly.Core;
+using Shouldly;
 using TestStack.BDDfy;
 using TestStack.BDDfy.Configuration;
 using Xunit;
@@ -16,12 +16,13 @@ namespace DDD.Sessionize.Tests.TestHelpers
 
         protected void Approve(string textToApprove, string extension = "txt", [CallerMemberName] string testMethod = "")
         {
+            var name = $"{GetType().Name}_{testMethod}";
             textToApprove.ShouldMatchApproved(b => b
-                .WithName(GetType().Name)
-                .InFolder(GetType().Namespace.Replace("DDD.Sessionize.Tests.", "").Replace(".", "\\"))
-                .WithFileExtension($".{extension}")
-                .WithDescriminator($"_{testMethod}")
+                .UseCallerLocation()
+                .WithFilenameGenerator((_, _, fileType, fileExtension) => $"{name}.{fileType}.{fileExtension}")
+                .WithFileExtension(extension)
                 .WithScrubber(_guidScrubber.Scrub)
+                .NoDiff()
             );
         }
 

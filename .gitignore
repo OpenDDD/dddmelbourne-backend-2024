@@ -274,3 +274,6 @@ DDD.Functions/local.settings.dev.json
 # Local agent loop
 .local-tools/
 .local-run/
+
+# Shouldly approval test output
+*.received.*
