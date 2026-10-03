@@ -38,4 +38,10 @@ To change a different setting, change it on the app. The next deploy keeps it.
 5. In `main.bicepparam`, set `customDomain = 'api.dddmelbourne.com'` and `enableTimers = true`.
 6. On `dddmelb-2024`, disable the timer functions. Then run `infra/deploy.sh`.
 7. Change the website to use `https://api.dddmelbourne.com`.
-8. When the old app has no traffic, delete `dddmelb-2024`.
+8. When the old app has no traffic, remove the old resources:
+   - Remove the Website Contributor role of `github-backend` on `dddmelb-2024`.
+   - Delete the GitHub secret `AZUREAPPSERVICE_PUBLISHPROFILE_33B4EA0901904CE49CD9226DB143C43F`.
+   - Delete the Function App `dddmelb-2024` and its plan `ASP-dddmelb2024-97b7`.
+   - Delete the storage account `dddmelb2024a182`. It holds only the host storage and the content share of the old app. Do this step only if no app setting of `dddmelb-2024-api` refers to it.
+
+The Cosmos DB accounts `dddmelb2024` (Table API) and `dddmelb2024nosql` keep the application data. Do not delete them.
