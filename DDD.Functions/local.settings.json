@@ -4,7 +4,7 @@
     // Web Jobs
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     // Conference
     "ConferenceInstance": "2022",
     // SessionizeReadModelSync

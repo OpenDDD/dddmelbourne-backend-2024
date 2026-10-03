@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Linq;
@@ -11,19 +10,25 @@ using Newtonsoft.Json;
 
 namespace DDD.Functions
 {
-    public static class GetFeedback
+    public class GetFeedback
     {
-        [FunctionName("GetFeedback")]
-        public static async Task<IActionResult> Run(
+        private readonly ILogger<GetFeedback> log;
+        private readonly ConferenceConfig conference;
+        private readonly FeedbackConfig feedbackConfig;
+        private readonly SessionsConfig sessionsConfig;
+
+        public GetFeedback(ILogger<GetFeedback> log, ConferenceConfig conference, FeedbackConfig feedbackConfig, SessionsConfig sessionsConfig)
+        {
+            this.log = log;
+            this.conference = conference;
+            this.feedbackConfig = feedbackConfig;
+            this.sessionsConfig = sessionsConfig;
+        }
+
+        [Function("GetFeedback")]
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
-            HttpRequest req,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindFeedbackConfig]
-            FeedbackConfig feedbackConfig,
-            [BindSessionsConfig]
-            SessionsConfig sessionsConfig)
+            HttpRequest req)
         {
             var (conferenceFeedbackRepo, sessionFeedbackRepo) = await feedbackConfig.GetRepositoryAsync();
             var conferenceFeedback = await conferenceFeedbackRepo.GetAllAsync(conference.ConferenceInstance);

@@ -7,23 +7,31 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using DDD.Core.Tito;
 using DDD.Functions.Extensions;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace DDD.Functions
 {
-    public static class TitoSync
+    public class TitoSync
     {
-        [FunctionName("TitoSync")]
-        public static async Task Run(
+        private readonly ILogger<TitoSync> log;
+        private readonly ConferenceConfig conference;
+        private readonly KeyDatesConfig keyDates;
+        private readonly TitoSyncConfig config;
+
+        public TitoSync(ILogger<TitoSync> log, ConferenceConfig conference, KeyDatesConfig keyDates, TitoSyncConfig config)
+        {
+            this.log = log;
+            this.conference = conference;
+            this.keyDates = keyDates;
+            this.config = config;
+        }
+
+        [Function("TitoSync")]
+        public async Task Run(
             [TimerTrigger("%TitoSyncSchedule%")]
-            TimerInfo timer,
-            ILogger log,
-            [BindConferenceConfig] ConferenceConfig conference,
-            [BindKeyDatesConfig] KeyDatesConfig keyDates,
-            [BindTitoSyncConfig] TitoSyncConfig config
-        )
+            TimerInfo timer)
         {
             if (keyDates.After(x => x.StopSyncingTitoFromDate, TimeSpan.FromMinutes(10)))
             {

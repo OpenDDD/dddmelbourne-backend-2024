@@ -1,38 +1,21 @@
-﻿using System;
-using Microsoft.Azure.WebJobs.Description;
-using Microsoft.Azure.WebJobs.Host.Config;
+using Microsoft.Extensions.Configuration;
 
 namespace DDD.Functions.Extensions
 {
-    public class FeedbackConfig : Attribute
+    public class FeedbackConfig
     {
-        [AppSetting(Default = "FeedbackConnectionString")]
+        public FeedbackConfig(IConfiguration config)
+        {
+            ConnectionString = config["FeedbackConnectionString"];
+            SessionFeedbackTable = config["SessionFeedbackTable"];
+            ConferenceFeedbackTable = config["ConferenceFeedbackTable"];
+            IsSingleVoteEligibleForPrizeDrawAppSetting = config["IsSingleVoteEligibleForPrizeDraw"];
+        }
+
         public string ConnectionString { get; set; }
-        [AppSetting(Default = "SessionFeedbackTable")]
         public string SessionFeedbackTable { get; set; }
-        [AppSetting(Default = "ConferenceFeedbackTable")]
         public string ConferenceFeedbackTable { get; set; }
-        [AppSetting(Default = "IsSingleVoteEligibleForPrizeDraw")]
         public string IsSingleVoteEligibleForPrizeDrawAppSetting { get; set; }
         public bool IsSingleVoteEligibleForPrizeDraw => IsSingleVoteEligibleForPrizeDrawAppSetting != "false";
-    }
-
-    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue)]
-    [Binding]
-    public class BindFeedbackConfigAttribute : FeedbackConfig { }
-
-    public class BindFeedbackConfigExtension : IExtensionConfigProvider
-    {
-        public void Initialize(ExtensionConfigContext context)
-        {
-            var rule = context.AddBindingRule<BindFeedbackConfigAttribute>();
-
-            rule.BindToInput(BuildItemFromAttr);
-        }
-
-        private FeedbackConfig BuildItemFromAttr(BindFeedbackConfigAttribute attr)
-        {
-            return attr;
-        }
     }
 }

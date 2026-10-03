@@ -5,25 +5,30 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using DDD.Core.AppInsights;
 using DDD.Functions.Extensions;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
 namespace DDD.Functions
 {
-    public static class AppInsightsSync
+    public class AppInsightsSync
     {
-        [FunctionName("AppInsightsSync")]
-        public static async Task Run(
+        private readonly ILogger<AppInsightsSync> log;
+        private readonly ConferenceConfig conference;
+        private readonly AppInsightsSyncConfig appInsights;
+        private readonly KeyDatesConfig keyDates;
+
+        public AppInsightsSync(ILogger<AppInsightsSync> log, ConferenceConfig conference, AppInsightsSyncConfig appInsights, KeyDatesConfig keyDates)
+        {
+            this.log = log;
+            this.conference = conference;
+            this.appInsights = appInsights;
+            this.keyDates = keyDates;
+        }
+
+        [Function("AppInsightsSync")]
+        public async Task Run(
             [TimerTrigger("%AppInsightsSyncSchedule%")]
-            TimerInfo timer,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindAppInsightsSyncConfig]
-            AppInsightsSyncConfig appInsights,
-            [BindKeyDatesConfig]
-            KeyDatesConfig keyDates
-        )
+            TimerInfo timer)
         {
             if (keyDates.Before(x => x.StartSyncingAppInsightsFromDate) || keyDates.After(x => x.StopSyncingAppInsightsFromDate, TimeSpan.FromMinutes(10)))
             {

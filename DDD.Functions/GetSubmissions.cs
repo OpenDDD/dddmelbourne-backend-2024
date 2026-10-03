@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
@@ -12,22 +11,27 @@ using Newtonsoft.Json;
 
 namespace DDD.Functions
 {
-    public static class GetSubmissions
+    public class GetSubmissions
     {
         private static readonly Random Random = new Random();
 
-        [FunctionName("GetSubmissions")]
-        public static async Task<IActionResult> Run(
+        private readonly ILogger<GetSubmissions> log;
+        private readonly ConferenceConfig conference;
+        private readonly KeyDatesConfig keyDates;
+        private readonly SubmissionsConfig submissions;
+
+        public GetSubmissions(ILogger<GetSubmissions> log, ConferenceConfig conference, KeyDatesConfig keyDates, SubmissionsConfig submissions)
+        {
+            this.log = log;
+            this.conference = conference;
+            this.keyDates = keyDates;
+            this.submissions = submissions;
+        }
+
+        [Function("GetSubmissions")]
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
-            HttpRequest req,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindKeyDatesConfig]
-            KeyDatesConfig keyDates,
-            [BindSubmissionsConfig]
-            SubmissionsConfig submissions
-        )
+            HttpRequest req)
         {
             if (keyDates.Before(x => x.SubmissionsAvailableFromDate) || keyDates.After(x => x.SubmissionsAvailableToDate))
             {

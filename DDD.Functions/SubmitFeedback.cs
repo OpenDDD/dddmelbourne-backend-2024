@@ -1,6 +1,6 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Threading.Tasks;
@@ -12,24 +12,29 @@ using DDD.Core.AzureStorage;
 
 namespace DDD.Functions
 {
-    public static class SubmitFeedback
+    public class SubmitFeedback
     {
-        [FunctionName("SubmitFeedback")]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
-            HttpRequestMessage req,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindKeyDatesConfig]
-            KeyDatesConfig keyDates,
-            [BindFeedbackConfig]
-            FeedbackConfig feedbackConfig,
-            [BindSessionsConfig]
-            SessionsConfig sessionsConfig
-            )
+        private readonly ILogger<SubmitFeedback> log;
+        private readonly ConferenceConfig conference;
+        private readonly KeyDatesConfig keyDates;
+        private readonly FeedbackConfig feedbackConfig;
+        private readonly SessionsConfig sessionsConfig;
+
+        public SubmitFeedback(ILogger<SubmitFeedback> log, ConferenceConfig conference, KeyDatesConfig keyDates, FeedbackConfig feedbackConfig, SessionsConfig sessionsConfig)
         {
-            var feedback = await req.Content.ReadAsAsync<FeedbackRequest>();
+            this.log = log;
+            this.conference = conference;
+            this.keyDates = keyDates;
+            this.feedbackConfig = feedbackConfig;
+            this.sessionsConfig = sessionsConfig;
+        }
+
+        [Function("SubmitFeedback")]
+        public async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
+            HttpRequest req)
+        {
+            var feedback = await req.ReadAsAsync<FeedbackRequest>();
 
             // Within feedback window
             if (keyDates.Before(x => x.FeedbackAvailableFromDate) || keyDates.After(x => x.FeedbackAvailableToDate))

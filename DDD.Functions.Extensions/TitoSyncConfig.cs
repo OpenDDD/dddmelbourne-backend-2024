@@ -1,43 +1,26 @@
-﻿using System;
-using Microsoft.Azure.WebJobs.Description;
-using Microsoft.Azure.WebJobs.Host.Config;
+using Microsoft.Extensions.Configuration;
 
 namespace DDD.Functions.Extensions
 {
-    public class TitoSyncConfig : Attribute
+    public class TitoSyncConfig
     {
-        [AppSetting(Default = "VotesConnectionString")]
+        public TitoSyncConfig(IConfiguration config)
+        {
+            ConnectionString = config["VotesConnectionString"];
+            Table = config["TitoTable"];
+            ApiKey = config["TitoApiBearerToken"];
+            EventId = config["TitoEventId"];
+            AccountId = config["TitoAccountId"];
+            WaitinglistConnectionString = config["WaitinglistConnectionString"];
+            WaitingListTable = config["WaitingListTable"];
+        }
+
         public string ConnectionString { get; set; }
-        [AppSetting(Default = "TitoTable")]
         public string Table { get; set; }
-        [AppSetting(Default = "TitoApiBearerToken")]
         public string ApiKey { get; set; }
-        [AppSetting(Default = "TitoEventId")]
         public string EventId { get; set; }
-        [AppSetting(Default = "TitoAccountId")]
         public string AccountId { get; set; }
-        [AppSetting(Default = "WaitinglistConnectionString")]
         public string WaitinglistConnectionString { get; set; }
-        [AppSetting(Default = "WaitingListTable")]
         public string WaitingListTable { get; set; }
-    }
-
-    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue)]
-    [Binding]
-    public class BindTitoSyncConfigAttribute : TitoSyncConfig { }
-
-    public class BindTitoSyncConfigExtension : IExtensionConfigProvider
-    {
-        public void Initialize(ExtensionConfigContext context)
-        {
-            var rule = context.AddBindingRule<BindTitoSyncConfigAttribute>();
-
-            rule.BindToInput(BuildItemFromAttr);
-        }
-
-        private TitoSyncConfig BuildItemFromAttr(BindTitoSyncConfigAttribute attr)
-        {
-            return attr;
-        }
     }
 }

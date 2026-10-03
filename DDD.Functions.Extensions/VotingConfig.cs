@@ -1,6 +1,5 @@
-﻿using System;
-using Microsoft.Azure.WebJobs.Description;
-using Microsoft.Azure.WebJobs.Host.Config;
+using System;
+using Microsoft.Extensions.Configuration;
 
 namespace DDD.Functions.Extensions
 {
@@ -17,16 +16,20 @@ namespace DDD.Functions.Extensions
         True
     }
 
-    public class VotingConfig : Attribute
+    public class VotingConfig
     {
-        [AppSetting(Default = "VotesConnectionString")]
+        public VotingConfig(IConfiguration config)
+        {
+            ConnectionString = config["VotesConnectionString"];
+            Table = config["VotingTable"];
+            TicketNumberWhileVoting = config["TicketNumberWhileVoting"];
+            WaitingListCanVoteWithEmailAppSetting = config["WaitingListCanVoteWithEmail"];
+        }
+
         public string ConnectionString { get; set; }
-        [AppSetting(Default = "VotingTable")]
         public string Table { get; set; }
-        [AppSetting(Default = "TicketNumberWhileVoting")]
         public string TicketNumberWhileVoting { get; set; }
         
-        [AppSetting(Default = "WaitingListCanVoteWithEmail")]
         public string WaitingListCanVoteWithEmailAppSetting { get; set; }
 
         public TicketNumberWhileVoting TicketNumberWhileVotingValue =>
@@ -35,24 +38,5 @@ namespace DDD.Functions.Extensions
                 (TicketNumberWhileVoting) Enum.Parse(typeof(TicketNumberWhileVoting), TicketNumberWhileVoting);
 
         public bool WaitingListCanVoteWithEmail => WaitingListCanVoteWithEmailAppSetting != "false";
-    }
-
-    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue)]
-    [Binding]
-    public class BindVotingConfigAttribute : VotingConfig { }
-
-    public class BindVotingConfigExtension : IExtensionConfigProvider
-    {
-        public void Initialize(ExtensionConfigContext context)
-        {
-            var rule = context.AddBindingRule<BindVotingConfigAttribute>();
-
-            rule.BindToInput(BuildItemFromAttr);
-        }
-
-        private VotingConfig BuildItemFromAttr(BindVotingConfigAttribute attr)
-        {
-            return attr;
-        }
     }
 }

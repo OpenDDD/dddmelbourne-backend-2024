@@ -1,29 +1,35 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using DDD.Core.AzureStorage;
 using DDD.Functions.Extensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace DDD.Functions
 {
-    public static class TitoWebhook
+    public class TitoWebhook
     {
-        [FunctionName("TitoWebhook")]
-        public static async Task<IActionResult> Run(
+        private readonly ILogger<TitoWebhook> log;
+        private readonly TitoWebhookConfig config;
+
+        public TitoWebhook(ILogger<TitoWebhook> log, TitoWebhookConfig config)
+        {
+            this.log = log;
+            this.config = config;
+        }
+
+        [Function("TitoWebhook")]
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
-            HttpRequestMessage req,
-            ILogger log,
-            [BindTitoWebhookConfig]
-            TitoWebhookConfig config)
+            HttpRequest req)
         {
             if (string.IsNullOrEmpty(config.Secret))
             {
@@ -32,8 +38,8 @@ namespace DDD.Functions
             }
 
             // Verify signature to ensure request came from Tito
-            var signature = req.Headers.Where(h => h.Key == "Tito-Signature").SelectMany(x => x.Value).FirstOrDefault();
-            var payload = await req.Content.ReadAsStringAsync();
+            var signature = req.Headers["Tito-Signature"].FirstOrDefault();
+            var payload = await new StreamReader(req.Body).ReadToEndAsync();
             var expectedSignature = Convert.ToBase64String(
                 new HMACSHA256(Encoding.UTF8.GetBytes(config.Secret))
                     .ComputeHash(Encoding.UTF8.GetBytes(payload)));
@@ -44,7 +50,7 @@ namespace DDD.Functions
             }
             log.LogDebug("Received valid signature {signature}", signature);
 
-            var eventType = req.Headers.Where(h => h.Key == "X-Webhook-Name").SelectMany(x => x.Value).FirstOrDefault();
+            var eventType = req.Headers["X-Webhook-Name"].FirstOrDefault();
 
             // Prevent duplicate webhook handling
             var webhookPayload = JsonConvert.DeserializeObject<WebhookPayload>(payload);
