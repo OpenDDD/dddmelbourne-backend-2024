@@ -263,9 +263,6 @@ __pycache__/
 # Approval tests
 *.received.*
 
-# Infrastructure
-infrastructure/profile.json
-infrastructure/local.private.json
 .DS_Store
 .vscode/
 

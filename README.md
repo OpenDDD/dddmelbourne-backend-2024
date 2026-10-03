@@ -15,43 +15,42 @@ This project contains backend functionality to run the DDD conferences, includin
 
 ### Prerequisites
 
-* VSCode (<https://code.visualstudio.com/>) or your preferred IDE
-* Dotnet Core 3.1 (<https://dotnet.microsoft.com/en-us/download/dotnet/3.1>)
-* Azure Functions Core Tools(<https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local>)
+* The .NET 10 SDK. `global.json` pins the SDK version.
+* Bash and `curl`. The scripts in `scripts/agent/` install the other tools into `.local-tools/`. They do not need `sudo`.
 
-```
- 
- azurite -s -l /home/dimka/temp/azurite/ -d /home/dimka/temp/azurite/debug.log
-```
+`scripts/agent/setup.sh` installs these tools:
 
-[Install CosmosDB emulator](https://learn.microsoft.com/en-us/azure/cosmos-db/emulator)
+* The .NET 10 SDK, if it is not already installed in `.local-tools/`
+* Node.js
+* [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite), which emulates Azure Table, Queue and Blob Storage
+* [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local)
 
 ### Commands
 
-Once: `npm install -g azurite`
+Run the full local loop:
 
-
-```
-azurite -s -l /home/dimka/temp/azurite/ -d /home/dimka/temp/azurite/debug.log
-```
-
-```
-docker run \
-    --publish 8081:8081 \
-    --publish 10250-10255:10250-10255 \
-    --interactive \
-    --tty \
-    mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest    
+```sh
+scripts/agent/loop.sh
 ```
 
-```
-cd DDD.Functions && func host start --build --debug --verbose
-```
+The loop installs the tools, builds the solution and runs the unit tests. Then it starts Azurite and the Functions host, runs smoke tests against the HTTP endpoints, and stops everything. Exit code 0 means that all checks passed.
+
+You can also run each step:
+
+* `scripts/agent/setup.sh`: Install the tools.
+* `scripts/agent/test.sh`: Build the solution and run the unit tests.
+* `scripts/agent/start.sh`: Start Azurite and the Functions host on `http://localhost:7071`. Set `PHASE=voting` or `PHASE=agenda` to open the matching date windows.
+* `scripts/agent/verify.sh`: Run the smoke tests against the running host.
+* `scripts/agent/stop.sh`: Stop the Functions host and Azurite.
+
+The logs are in `.local-run/func.log` and `.local-run/azurite.log`.
+
+`DDD.Functions/local.settings.json` holds the local app settings. The Cosmos DB paths (`UserVotingSessions*` settings, used by `EloVotingGetPair`) need the [Cosmos DB emulator](https://learn.microsoft.com/azure/cosmos-db/emulator), so the local loop does not cover them.
 
 ## Structure
 
 * `DDD.Core`: Cross-cutting logic and core domain model
-* `DDD.Functions`: Azure Functions project that contains:
+* `DDD.Functions`: Azure Functions project (.NET 10, isolated worker) that contains:
   * `AppInsightsSync`: C# Azure Function that syncs app insights user IDs to Azure Table Storage for users that submitted a vote
   * `TitoSync`: C# Azure Function that syncs Tito order IDs to Azure Table Storage for a configured event
   * `GetAgenda`: C# Azure Function that returns sessions and presenters that have been approved for agenda
@@ -62,13 +61,13 @@ cd DDD.Functions && func host start --build --debug --verbose
   * `SessionizeReadModelSync`: C# Azure Function triggered by a cron schedule defined in config that performs a sync from Sessionize to Azure Table Storage for submissions
   * `SessionizeAgendaSync`: C# Azure Function triggered by a cron schedule defined in config that performs a sync from Sessionize to Azure Table Storage for approved sessions
   * `SubmitVote`: : C# Azure Function that allows a vote for submissions to be submitted, where it is validated and persisted to Azure Table Storage
+* `DDD.Functions.Extensions`: App settings, repository set-up and request helpers for `DDD.Functions`
 * `DDD.Sessionize`: Syncing logic to sync data from sessionize to Azure Table Storage
-* `DDD.Sessionize.Tests`: Unit tests for the Sessionize Syncing code
-* `infrastructure`: Azure ARM deployment scripts to provision the backend environment
-  * `Deploy-Local.ps1`: Run locally to debug or develop the scripts using your user context in Azure
-  * `Deploy.ps1`: Main deployment script that you need to call from CD pipeline
-  * `azuredeploy.json`: Azure ARM template
-* `.vsts-ci.yml`: VSTS Continuous Integration definition for this project
+* `DDD.Sessionize.Tests`: Unit tests for the Sessionize Syncing code and the encryption helper
+* `infra`: Bicep template and deploy script for the Function App. See [infra/README.md](infra/README.md).
+* `scripts/agent`: Scripts for the local build, test and smoke-test loop
+* `.github/workflows`: GitHub Actions workflows for pull requests and deployment
+* `votes-export-to-csv`: Tool that exports the vote tables to CSV
 
 ## Backend date parameters and usage
 
@@ -90,20 +89,24 @@ The backend application depends on programmatic access to the [Frontend Website'
 
 To supply this access, create an API key with `Read telemetry` permissions within the frontend website's Application Insights instance in the Azure Portal, and enter the Application ID and Key presented into the `AppInsightsApplicationId` and `AppInsightsApplicationKey` parameters.
 
-## Setting up Continuous Delivery in VSTS
+## Voting session settings
 
-VSTS doesn't yet support .yml files for Continuous Delivery (Release) so the steps to set it up are:
+* `UserVotingSessionsConnectionString`: connection string of the Cosmos DB NoSQL account that keeps the Elo voting sessions
+* `UserVotingSessionsDatabaseId`: database name in that account
+* `UserVotingSessionsContainerId`: container name in that database
+* `UserVotingSessionHeaderName`: name of the request header that holds the voting session ID. If you do not set it, the API uses `X-DDDPerth-VotingSessionId`.
+* `UserVotingSessionTtlSeconds`: time to live of a voting session, in seconds. If you do not set it, the API uses `259200` (3 days).
 
-* Install [SAS Token VSTS extension](https://marketplace.visualstudio.com/items?itemName=pascalnaber.PascalNaber-Xpirit-CreateSasToken)
-  * todo: Just add it to Deploy.ps1
-* Create the release definition triggered by the CI build
-* Add a task for the SAS token generation for the storage account you persisted deployments to set the output variables to `DeploymentZipUri` and `DeploymentZipToken` respectively, recommend setting the timeout to a big number so it's always available (e.g. `1000000`), permission should just be `r`
-* Add an Azure PowerShell task against your subscription and:
-  * `$(System.DefaultWorkingDirectory)/{CI build name}/infrastructure/Deploy.ps1` as the script file path
-  * `` as the script arguments
-* Add variables, e.g.:
-    ![Variables](vsts-cd-variables.png)
-* Profit!
+## Deployment
+
+GitHub Actions builds, tests and deploys the code:
+
+* `.github/workflows/pr.yml` builds the solution and runs the unit tests for each pull request to `master`.
+* `.github/workflows/deploy.yml` runs for each push to `master`. It builds, tests and publishes `DDD.Functions`. Then it deploys the package to the Function App `dddmelb-2024-api`.
+
+The deploy workflow signs in to Azure with OpenID Connect (OIDC). It does not use a publish profile or a stored secret. The workflow reads the repository variables `AZURE_CLIENT_ID`, `AZURE_TENANT_ID` and `AZURE_SUBSCRIPTION_ID`. The federated credential trusts only `refs/heads/master`.
+
+The workflow deploys code only. `infra/` defines the Function App and its resources. To change the infrastructure, see [infra/README.md](infra/README.md).
 
 ## New Session Notification Logic App
 
@@ -203,7 +206,7 @@ The `NewSessionNotificationLogicAppUrl` value is gotten by creating a logic app 
 
 The logic app would roughly have:
 
-* `When there are messages in a queue` trigger to the `attendees` queue of the `{conferencename}functions{environment}` storage account
+* `When there are messages in a queue` trigger to the `attendees` queue of the storage account in the `TitoWebhookConnectionString` app setting
 * `Post message` action (for Teams/Slack) with something like `@{json(trigger().outputs.body.MessageText).name} is attending @{json(trigger().outputs.body.MessageText).event} as @{json(trigger().outputs.body.MessageText).ticketClass} (orderid: @{json(trigger().outputs.body.MessageText).orderId}). @{json(trigger().outputs.body.MessageText).qtySold}/@{json(trigger().outputs.body.MessageText).totalQty} @{json(trigger().outputs.body.MessageText).ticketClass} tickets taken.`
 * `Delete message` action for the `attendees` queue with the Message ID and Pop Receipt from the trigger
 
@@ -238,7 +241,7 @@ You'd usually would do this before voting opens, that's where the backend needed
 
 ![Sessionize API keys](docs/sessionize-api-keys.png)
 
-4. Update environment variables in Functions App `dddmelb-2024`
+4. Update environment variables in Functions App `dddmelb-2024-api`
   * Go to Functions -> Settings -> Environment Variables
   * `SessionizeApiKey` - use voting API id
   * `SessionizeAgendaApiKey` - use agenda API id
