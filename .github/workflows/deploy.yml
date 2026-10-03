@@ -1,7 +1,7 @@
 # Docs for the Azure Functions deploy action: https://github.com/azure/functions-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy dotnet core project to Azure Function App - dddmelb-2024
+name: Build and deploy to Azure Function App - dddmelb-2024-api
 
 on:
   push:
@@ -14,11 +14,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: deploy-dddmelb-2024
+  group: deploy-dddmelb-2024-api
   cancel-in-progress: false
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'dddmelb-2024'
+  AZURE_FUNCTIONAPP_NAME: 'dddmelb-2024-api'
   PUBLISH_PATH: './publish'
 
 jobs:
