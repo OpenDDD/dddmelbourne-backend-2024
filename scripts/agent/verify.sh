@@ -40,10 +40,12 @@ for fn in GetAgenda GetSubmissions SubmitVote TitoWebhook SessionizeReadModelSyn
   if grep -q "$fn" "$RUN/func.log"; then echo "PASS indexed $fn"; else echo "FAIL not indexed $fn"; fail=1; fi
 done
 
-# Unhandled exceptions in the host log (timer syncs hit external APIs/Cosmos and are expected to fail locally)
-if grep -E "Exception while executing function" "$RUN/func.log" | grep -vE "Sessionize|Tito|AppInsights|Cosmos|SessionizeAgendaSync|SessionizeReadModelSync|NewSessionNotification" | grep -q .; then
-  echo "FAIL host log contains function exceptions:"
-  grep -E "Exception while executing function" "$RUN/func.log" | head -5; fail=1
+# Timer syncs hit external APIs/Cosmos and are expected to fail locally.
+unexpected="$(grep -E "Exception while executing function" "$RUN/func.log" \
+  | grep -vE "Sessionize|Tito|AppInsights|Cosmos|NewSessionNotification" || true)"
+if [[ -n "$unexpected" ]]; then
+  echo "FAIL host log contains unexpected function exceptions:"
+  echo "$unexpected" | head -5; fail=1
 fi
 
 exit $fail
