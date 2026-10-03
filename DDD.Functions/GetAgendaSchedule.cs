@@ -9,7 +9,6 @@ using DDD.Functions.Extensions;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using Azure.Storage.Blobs;
-using System.Runtime;
 using System.Text;
 
 namespace DDD.Functions
@@ -61,12 +60,6 @@ namespace DDD.Functions
             settings.ContractResolver = new DefaultContractResolver();
 
             return new JsonResult(agendaScheduleContent.ToString(), settings);
-        }
-
-        public class AgendaSchedule
-        {
-            public string Year { get; set; }
-            public string Content { get; set; }
         }
     }
 }

@@ -41,7 +41,6 @@ namespace DDD.Functions.Extensions
         public DateTimeOffset VotingAvailableToDate => VotingAvailableTo != null ? DateTimeOffset.Parse(VotingAvailableTo) : DateTimeOffset.MinValue;
 
         // App Insights Sync
-        public string AppInsightsApplicationKey { get; set; }
         public string StartSyncingAppInsightsFrom { get; set; }
         public DateTimeOffset StartSyncingAppInsightsFromDate => StartSyncingAppInsightsFrom != null ? DateTimeOffset.Parse(StartSyncingAppInsightsFrom) : DateTimeOffset.MinValue;
         public string StopSyncingAppInsightsFrom { get; set; }
