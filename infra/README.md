@@ -23,7 +23,7 @@ The template manages these settings, and they replace the live values:
 
 - `AzureWebJobsStorage__accountName`
 - `APPLICATIONINSIGHTS_CONNECTION_STRING`
-- `AzureWebJobs.<timer>.Disabled` for each name in `timerFunctionNames`
+- `AzureWebJobs.<timer>.Disabled` for each name in `timerFunctionNames`. These are the timers that must not run on two apps at the same time.
 
 To change a different setting, change it on the app. The next deploy keeps it.
 
@@ -35,8 +35,9 @@ To change a different setting, change it on the app. The next deploy keeps it.
 4. In Cloudflare, add these records for `api.dddmelbourne.com`. Set the proxy status to DNS only.
    - `CNAME api` to `dddmelb-2024-api.azurewebsites.net`
    - `TXT asuid.api` with the `customDomainVerificationId` output of `deploy.sh`
-5. In `main.bicepparam`, set `customDomain = 'api.dddmelbourne.com'` and `enableTimers = true`.
-6. On `dddmelb-2024`, disable the timer functions. Then run `infra/deploy.sh`.
+5. On `dddmelb-2024`, disable the timer functions `SessionizeAgendaSync` and `SessionizeReadModelSync`.
+6. In `main.bicepparam`, set `customDomain = 'api.dddmelbourne.com'` and `enableTimers = true`. Then run `infra/deploy.sh`. This deploy issues the managed certificate.
+   - Then set `customDomainCertificateIssued = true` and commit. Later deploys then keep SSL on for the custom domain.
 7. Change the website to use `https://api.dddmelbourne.com`.
 8. When the old app has no traffic, remove the old resources:
    - Remove the Website Contributor role of `github-backend` on `dddmelb-2024`.

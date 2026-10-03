@@ -18,13 +18,16 @@ param deployIdentityName string
 
 param allowedOrigins string[]
 
-@description('Names of the timer functions. They stay disabled until `enableTimers` is true, so two apps do not run the same sync jobs.')
+@description('Timer functions that must not run on two apps at the same time. They stay disabled until `enableTimers` is true. Other functions keep the `AzureWebJobs.<name>.Disabled` value from the live app settings.')
 param timerFunctionNames string[]
 
 param enableTimers bool = false
 
 @description('Custom host name, for example api.dddmelbourne.com. Leave empty until the DNS records exist.')
 param customDomain string = ''
+
+@description('Set to true after the first deploy with `customDomain` issues the managed certificate. Then later deploys do not turn SSL off on the binding.')
+param customDomainCertificateIssued bool = false
 
 param maximumInstanceCount int = 40
 
@@ -39,6 +42,7 @@ var deploymentContainerName = 'app-package'
 
 var roleIds = {
   storageBlobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
+  storageTableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
   websiteContributor: 'de139f84-1756-47ae-9be6-808fbbe84772'
 }
 
@@ -147,6 +151,7 @@ resource appSettingsConfig 'Microsoft.Web/sites/config@2024-11-01' = {
   )
   dependsOn: [
     storageBlobDataOwner
+    storageTableDataContributor
   ]
 }
 
@@ -177,6 +182,17 @@ resource storageBlobDataOwner 'Microsoft.Authorization/roleAssignments@2022-04-0
   }
 }
 
+// The Functions host writes diagnostic events to Table storage. No queue or blob triggers exist, so the app needs no queue role.
+resource storageTableDataContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: storage
+  name: guid(storage.id, site.id, roleIds.storageTableDataContributor)
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleIds.storageTableDataContributor)
+    principalId: site.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 resource deployIdentityWebsiteContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: site
   name: guid(site.id, deployIdentity.id, roleIds.websiteContributor)
@@ -187,7 +203,8 @@ resource deployIdentityWebsiteContributor 'Microsoft.Authorization/roleAssignmen
   }
 }
 
-resource hostNameBinding 'Microsoft.Web/sites/hostNameBindings@2024-11-01' = if (!empty(customDomain)) {
+// A managed certificate needs an existing binding, so the first deploy binds without SSL. Later deploys skip this step.
+resource hostNameBinding 'Microsoft.Web/sites/hostNameBindings@2024-11-01' = if (!empty(customDomain) && !customDomainCertificateIssued) {
   parent: site
   name: empty(customDomain) ? 'unused' : customDomain
   properties: {
@@ -197,8 +214,10 @@ resource hostNameBinding 'Microsoft.Web/sites/hostNameBindings@2024-11-01' = if 
   }
 }
 
-resource managedCertificate 'Microsoft.Web/certificates@2024-11-01' = if (!empty(customDomain)) {
-  name: '${appName}-${replace(customDomain, '.', '-')}'
+// Flex Consumption apps use site-scoped certificates.
+resource managedCertificate 'Microsoft.Web/sites/certificates@2024-11-01' = if (!empty(customDomain)) {
+  parent: site
+  name: empty(customDomain) ? 'unused' : replace(customDomain, '.', '-')
   location: location
   properties: {
     serverFarmId: plan.id

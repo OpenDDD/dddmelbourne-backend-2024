@@ -16,14 +16,12 @@ param allowedOrigins = [
 ]
 
 param timerFunctionNames = [
-  'AppInsightsSync'
-  'NewSessionNotification'
   'SessionizeAgendaSync'
   'SessionizeReadModelSync'
-  'TitoSync'
 ]
 
 param enableTimers = false
 param customDomain = ''
+param customDomainCertificateIssued = false
 
 param appSettings = json(readEnvironmentVariable('APP_SETTINGS_JSON', '{}'))
