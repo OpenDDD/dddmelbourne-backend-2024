@@ -27,9 +27,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -40,7 +40,7 @@ jobs:
       - run: dotnet publish DDD.Functions/DDD.Functions.csproj --configuration Release --no-build --output ${{ env.PUBLISH_PATH }}
 
       # The federated credential trusts only refs/heads/master, so login fails on any other ref.
-      - uses: azure/login@v2
+      - uses: azure/login@v3
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
