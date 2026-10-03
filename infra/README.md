@@ -31,7 +31,9 @@ To change a different setting, change it on the app. The next deploy keeps it.
 
 1. Merge to `master`. The workflow deploys the code to `dddmelb-2024-api`.
 2. Copy the function keys of `GetFeedback`, `GetPrizeDraw`, `GetVotes` and `TitoWebhook` from `dddmelb-2024`. Callers such as the Tito webhook use these keys.
-3. Smoke-test `https://dddmelb-2024-api.azurewebsites.net`.
+3. Smoke-test `https://dddmelb-2024-api.azurewebsites.net`:
+   - Run `az functionapp function list -g dddmelb-2024 -n dddmelb-2024-api` and make sure all 16 functions show. Read the host logs in Application Insights for indexing errors.
+   - Submit one test vote. Make sure the stored `IpAddress` is the client IP, not an Azure internal address. The Functions host can change `X-Forwarded-For` before the worker gets the request.
 4. In Cloudflare, add these records for `api.dddmelbourne.com`. Set the proxy status to DNS only.
    - `CNAME api` to `dddmelb-2024-api.azurewebsites.net`
    - `TXT asuid.api` with the `customDomainVerificationId` output of `deploy.sh`
