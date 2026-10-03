@@ -49,9 +49,10 @@ namespace DDD.Functions
                 var response = await blobClient.DownloadAsync();
                 using (var streamReader= new StreamReader(response.Value.Content))
                 {
-                    while (!streamReader.EndOfStream)
+                    string line;
+                    while ((line = await streamReader.ReadLineAsync()) != null)
                     {
-                        agendaScheduleContent.Append(await streamReader.ReadLineAsync());
+                        agendaScheduleContent.Append(line);
                     }
                 }
             }

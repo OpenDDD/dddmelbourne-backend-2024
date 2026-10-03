@@ -7,6 +7,7 @@ using DDD.Core.AppInsights;
 using DDD.Functions.Extensions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace DDD.Functions
 {
@@ -41,7 +42,7 @@ namespace DDD.Functions
 
             var response = await http.GetAsync($"https://api.applicationinsights.io/v1/apps/{appInsights.ApplicationId}/query?timespan={WebUtility.UrlEncode(keyDates.StartSyncingAppInsightsFrom)}%2F{WebUtility.UrlEncode(keyDates.StopSyncingAppInsightsFrom)}&query={WebUtility.UrlEncode(VotingUserQuery.Query)}");
             response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsAsync<AppInsightsQueryResponse<VotingUserQuery>>();
+            var content = JsonConvert.DeserializeObject<AppInsightsQueryResponse<VotingUserQuery>>(await response.Content.ReadAsStringAsync());
             var currentRecords = content.Data.Select(x => new AppInsightsVotingUser(conference.ConferenceInstance, x.UserId, x.VoteId, x.StartTime)).ToArray();
 
             var repo = await appInsights.GetRepositoryAsync();

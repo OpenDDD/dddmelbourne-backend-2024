@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using DDD.Core.Tito;
@@ -81,20 +80,18 @@ namespace DDD.Functions
             {
                 try
                 {
-                    var formatters = new MediaTypeFormatterCollection();
-                    formatters.JsonFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/vnd.api+json"));
-                    var content = await response.Content.ReadAsAsync<PaginatedTitoTicketsResponse>(formatters);
+                    var content = JsonConvert.DeserializeObject<PaginatedTitoTicketsResponse>(await response.Content.ReadAsStringAsync());
                     
                     return (content.Tickets, content.Meta.HasMoreItems, content.Meta.NextPage);
                 }
                 catch(Exception ex)
                 {
-                    log.LogCritical("Error reading Tito response.", ex);
+                    log.LogCritical(ex, "Error reading Tito response.");
                 }
             }
             else 
             {
-                log.LogCritical("Error connecting to Tito with http response: {reason}. The dump of the response: ", response.StatusCode, response.Content.ReadAsStringAsync());
+                log.LogCritical("Error connecting to Tito with http response: {reason}. The dump of the response: {response}", response.StatusCode, await response.Content.ReadAsStringAsync());
             }
             return (null, false, null);
         }

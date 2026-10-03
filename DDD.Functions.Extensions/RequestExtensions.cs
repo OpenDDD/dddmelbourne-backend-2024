@@ -1,9 +1,10 @@
+using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 public static class RequestExtensions
 {
@@ -19,11 +20,7 @@ public static class RequestExtensions
 
     public static async Task<T> ReadAsAsync<T>(this HttpRequest req)
     {
-        var content = new StreamContent(req.Body);
-        if (MediaTypeHeaderValue.TryParse(req.ContentType, out var contentType))
-            content.Headers.ContentType = contentType;
-        // The formatter reads synchronously, and Kestrel rejects synchronous reads of the request body.
-        await content.LoadIntoBufferAsync();
-        return await content.ReadAsAsync<T>();
+        using var reader = new StreamReader(req.Body, req.GetTypedHeaders().ContentType?.Encoding ?? Encoding.UTF8);
+        return JsonConvert.DeserializeObject<T>(await reader.ReadToEndAsync());
     }
 }
