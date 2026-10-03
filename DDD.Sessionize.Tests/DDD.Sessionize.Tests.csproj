@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <OutputType>Exe</OutputType>
+    <!-- Shouldly finds approved files from stack frames. Optimised builds drop those frames through tail calls. -->
+    <Optimize>false</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
