@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Queue;
+using Azure.Storage.Queues;
 using Newtonsoft.Json;
 
 namespace DDD.Core.AzureStorage
@@ -13,12 +12,12 @@ namespace DDD.Core.AzureStorage
 
     public class QueueStorageRepository<T> : IQueueStorageRepository<T> where T : class, new()
     {
-        private readonly CloudQueue _queue;
+        private readonly QueueClient _queue;
 
-        public QueueStorageRepository(CloudStorageAccount storageAccount, string queueName)
+        public QueueStorageRepository(string connectionString, string queueName)
         {
-            var client = storageAccount.CreateCloudQueueClient();
-            _queue = client.GetQueueReference(queueName);
+            // Microsoft.Azure.Storage.Queue base64-encoded messages, and the Logic Apps that read the queue expect that.
+            _queue = new QueueClient(connectionString, queueName, new QueueClientOptions { MessageEncoding = QueueMessageEncoding.Base64 });
         }
 
         public async Task InitializeAsync()
@@ -28,7 +27,7 @@ namespace DDD.Core.AzureStorage
 
         public async Task PushAsync(T item)
         {
-            await _queue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(item)));
+            await _queue.SendMessageAsync(JsonConvert.SerializeObject(item));
         }
     }
 }

@@ -1,7 +1,8 @@
-using Microsoft.Azure.Cosmos.Table;
+using System.Runtime.Serialization;
+using DDD.Core.AzureStorage;
 namespace DDD.Core.EloVoting
 {
-    public class EloVote : TableEntity
+    public class EloVote : TableStorageEntity
     {
         public EloVote() { }
 
@@ -25,6 +26,7 @@ namespace DDD.Core.EloVoting
         public string VoterSessionId { get; set; }
         public string VoterTicket { get; set; }
         public string VoterLastname { get; set; }
+        [IgnoreDataMember]
         public string VoteId => RowKey;
     }
 }

@@ -1,9 +1,8 @@
 ﻿using System;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace DDD.Core.AzureStorage
 {
-    public class SessionFeedbackEntity : TableEntity
+    public class SessionFeedbackEntity : TableStorageEntity
     {
         public SessionFeedbackEntity() {}
 

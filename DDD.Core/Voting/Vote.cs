@@ -1,10 +1,11 @@
 ﻿using System;
-using Microsoft.Azure.Cosmos.Table;
+using System.Runtime.Serialization;
+using DDD.Core.AzureStorage;
 using Newtonsoft.Json;
 
 namespace DDD.Core.Voting
 {
-    public class Vote : TableEntity
+    public class Vote : TableStorageEntity
     {
         public Vote() { }
 
@@ -40,6 +41,11 @@ namespace DDD.Core.Voting
         public string VoterSessionId { get; set; }
         public DateTimeOffset VotingStartTime { get; set; }
         public DateTimeOffset VotingSubmittedTime { get; set; }
+        [IgnoreDataMember]
         public string VoteId => RowKey;
+
+        // GetVotes returns this entity as JSON. Newtonsoft skips [IgnoreDataMember], and Azure.Data.Tables skips non-public members.
+        [JsonProperty(nameof(VoteId))]
+        private string SerializedVoteId => RowKey;
     }
 }

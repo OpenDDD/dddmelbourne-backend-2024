@@ -1,12 +1,12 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using DDD.Core.Domain;
 using DDD.Core.Time;
-using Microsoft.Azure.Cosmos.Table;
 using Newtonsoft.Json;
 
 namespace DDD.Core.AzureStorage
 {
-    public class PresenterEntity : TableEntity
+    public class PresenterEntity : TableStorageEntity
     {
         public PresenterEntity() { }
 
@@ -24,6 +24,7 @@ namespace DDD.Core.AzureStorage
             return JsonConvert.DeserializeObject<Presenter>(Presenter);
         }
 
+        [IgnoreDataMember]
         public Guid Id => Guid.Parse(RowKey);
 
         public string ExternalId { get; set; }

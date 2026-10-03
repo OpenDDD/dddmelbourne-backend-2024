@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Azure.Cosmos.Table;
+using DDD.Core.AzureStorage;
 
 namespace DDD.Core.AppInsights
 {
-    public class AppInsightsVotingUser : TableEntity
+    public class AppInsightsVotingUser : TableStorageEntity
     {
         public AppInsightsVotingUser() { }
 
