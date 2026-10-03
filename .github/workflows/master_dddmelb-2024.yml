@@ -20,7 +20,6 @@ concurrency:
 env:
   AZURE_FUNCTIONAPP_NAME: 'dddmelb-2024'
   PUBLISH_PATH: './publish'
-  DOTNET_VERSION: '6.0.x'
 
 jobs:
   build-and-deploy:
@@ -31,7 +30,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: global.json
 
       - run: dotnet build DDD.sln --configuration Release
 
