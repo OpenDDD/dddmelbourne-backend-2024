@@ -53,7 +53,6 @@ cd DDD.Functions && func host start --build --debug --verbose
 * `DDD.Core`: Cross-cutting logic and core domain model
 * `DDD.Functions`: Azure Functions project that contains:
   * `AppInsightsSync`: C# Azure Function that syncs app insights user IDs to Azure Table Storage for users that submitted a vote
-  * `TitoNotification`: Node.js Azure Function that exposes a web hook URL that can be added to Tito (via Account Settings > Webhooks) for the `order.placed` action that will then de-duplicate webhook events and push them to queue storage for further processing (e.g. via a Logic App)
   * `TitoSync`: C# Azure Function that syncs Tito order IDs to Azure Table Storage for a configured event
   * `GetAgenda`: C# Azure Function that returns sessions and presenters that have been approved for agenda
   * `GetAgendaSchedule`: C# Azure Function that returns agenda schedule from sessionize

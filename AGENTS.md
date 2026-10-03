@@ -1,6 +1,6 @@
 # Agent instructions
 
-Azure Functions (.NET 6, in-proc, v4) backend for DDD Melbourne. Projects: `DDD.Core`, `DDD.Functions`, `DDD.Functions.Extensions`, `DDD.Sessionize`, `DDD.Sessionize.Tests`.
+Azure Functions (.NET 10, isolated worker, v4) backend for DDD Melbourne. Projects: `DDD.Core`, `DDD.Functions`, `DDD.Functions.Extensions`, `DDD.Sessionize`, `DDD.Sessionize.Tests`.
 
 ## Verify changes
 
@@ -14,6 +14,7 @@ Run `scripts/agent/loop.sh` after every code change. It installs tooling into `.
 
 ## Gotchas
 
-- Do not upgrade `azure-functions-core-tools` past the version pinned in `setup.sh`; newer releases fail on Node 18.
+- `setup.sh` pins the .NET SDK channel, Node, Azurite and `azure-functions-core-tools`. Core Tools needs Node 22 or later, so `setup.sh` installs Node into `.local-tools/node`. Do not use the system Node.
+- App settings bind to config classes in `DDD.Functions.Extensions`, which are injected through DI. Keep the app setting names the same; production uses them.
 - Never commit `local.settings.json` secrets or `.local-tools/`, `.local-run/`.
 - In the VS Code Flatpak sandbox, `git push` over SSH and `gh` may be unavailable; `gh` is at `/run/host/usr/bin/gh`. Ask the user before pushing or opening PRs.
