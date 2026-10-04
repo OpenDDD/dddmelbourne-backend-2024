@@ -20,7 +20,7 @@ param timerFunctionNames = [
   'SessionizeReadModelSync'
 ]
 
-param enableTimers = false
+param enableTimers = true
 param customDomain = ''
 param customDomainCertificateIssued = false
 
