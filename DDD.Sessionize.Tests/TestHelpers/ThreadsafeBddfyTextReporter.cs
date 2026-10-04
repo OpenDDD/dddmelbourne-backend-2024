@@ -178,7 +178,7 @@ namespace DDD.Sessionize.Tests.TestHelpers
         }
 
         var step = stepAndLines.Item1;
-        var humanizedResult = Configurator.Scanners.Humanize(step.Result.ToString());
+        var humanizedResult = Configurator.Humanizer.Humanize(step.Result.ToString());
 
         string message;
         if (scenario.Result == Result.Passed)

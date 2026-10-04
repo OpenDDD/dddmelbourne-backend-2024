@@ -263,9 +263,6 @@ __pycache__/
 # Approval tests
 *.received.*
 
-# Infrastructure
-infrastructure/profile.json
-infrastructure/local.private.json
 .DS_Store
 .vscode/
 
@@ -274,3 +271,6 @@ DDD.Functions/local.settings.dev.json
 # Local agent loop
 .local-tools/
 .local-run/
+
+# Shouldly approval test output
+*.received.*

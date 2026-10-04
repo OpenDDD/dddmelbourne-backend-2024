@@ -5,25 +5,31 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using DDD.Core.AppInsights;
 using DDD.Functions.Extensions;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace DDD.Functions
 {
-    public static class AppInsightsSync
+    public class AppInsightsSync
     {
-        [FunctionName("AppInsightsSync")]
-        public static async Task Run(
+        private readonly ILogger<AppInsightsSync> log;
+        private readonly ConferenceConfig conference;
+        private readonly AppInsightsSyncConfig appInsights;
+        private readonly KeyDatesConfig keyDates;
+
+        public AppInsightsSync(ILogger<AppInsightsSync> log, ConferenceConfig conference, AppInsightsSyncConfig appInsights, KeyDatesConfig keyDates)
+        {
+            this.log = log;
+            this.conference = conference;
+            this.appInsights = appInsights;
+            this.keyDates = keyDates;
+        }
+
+        [Function("AppInsightsSync")]
+        public async Task Run(
             [TimerTrigger("%AppInsightsSyncSchedule%")]
-            TimerInfo timer,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindAppInsightsSyncConfig]
-            AppInsightsSyncConfig appInsights,
-            [BindKeyDatesConfig]
-            KeyDatesConfig keyDates
-        )
+            TimerInfo timer)
         {
             if (keyDates.Before(x => x.StartSyncingAppInsightsFromDate) || keyDates.After(x => x.StopSyncingAppInsightsFromDate, TimeSpan.FromMinutes(10)))
             {
@@ -36,7 +42,7 @@ namespace DDD.Functions
 
             var response = await http.GetAsync($"https://api.applicationinsights.io/v1/apps/{appInsights.ApplicationId}/query?timespan={WebUtility.UrlEncode(keyDates.StartSyncingAppInsightsFrom)}%2F{WebUtility.UrlEncode(keyDates.StopSyncingAppInsightsFrom)}&query={WebUtility.UrlEncode(VotingUserQuery.Query)}");
             response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsAsync<AppInsightsQueryResponse<VotingUserQuery>>();
+            var content = JsonConvert.DeserializeObject<AppInsightsQueryResponse<VotingUserQuery>>(await response.Content.ReadAsStringAsync());
             var currentRecords = content.Data.Select(x => new AppInsightsVotingUser(conference.ConferenceInstance, x.UserId, x.VoteId, x.StartTime)).ToArray();
 
             var repo = await appInsights.GetRepositoryAsync();

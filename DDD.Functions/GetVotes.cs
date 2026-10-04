@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -17,23 +16,29 @@ using Microsoft.Extensions.Logging;
 
 namespace DDD.Functions
 {
-    public static class GetVotes
+    public class GetVotes
     {
-        [FunctionName("GetVotes")]
-        public static async Task<IActionResult> Run(
+        private readonly ILogger<GetVotes> log;
+        private readonly ConferenceConfig conference;
+        private readonly SubmissionsConfig submissions;
+        private readonly VotingConfig voting;
+        private readonly TitoSyncConfig tickets;
+        private readonly AppInsightsSyncConfig appInsights;
+
+        public GetVotes(ILogger<GetVotes> log, ConferenceConfig conference, SubmissionsConfig submissions, VotingConfig voting, TitoSyncConfig tickets, AppInsightsSyncConfig appInsights)
+        {
+            this.log = log;
+            this.conference = conference;
+            this.submissions = submissions;
+            this.voting = voting;
+            this.tickets = tickets;
+            this.appInsights = appInsights;
+        }
+
+        [Function("GetVotes")]
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
-            HttpRequest req,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindSubmissionsConfig]
-            SubmissionsConfig submissions,
-            [BindVotingConfig]
-            VotingConfig voting,
-            [BindTitoSyncConfig]
-            TitoSyncConfig tickets,
-            [BindAppInsightsSyncConfig]
-            AppInsightsSyncConfig appInsights)
+            HttpRequest req)
         {
             // Get submissions
             var (submissionsRepo, submittersRepo) = await submissions.GetRepositoryAsync();

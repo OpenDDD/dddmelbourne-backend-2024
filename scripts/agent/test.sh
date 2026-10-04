@@ -4,4 +4,4 @@ set -euo pipefail
 source "$(dirname "$0")/env.sh"
 cd "$ROOT"
 dotnet build DDD.sln --nologo -v q
-dotnet test DDD.Sessionize.Tests --nologo --no-build
+dotnet test --project DDD.Sessionize.Tests --no-build

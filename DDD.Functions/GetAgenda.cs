@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Linq;
@@ -11,19 +10,25 @@ using Newtonsoft.Json;
 
 namespace DDD.Functions
 {
-    public static class GetAgenda
+    public class GetAgenda
     {
-        [FunctionName("GetAgenda")]
-        public static async Task<IActionResult> Run(
+        private readonly ILogger<GetAgenda> log;
+        private readonly ConferenceConfig conference;
+        private readonly KeyDatesConfig keyDates;
+        private readonly SessionsConfig sessionsConfig;
+
+        public GetAgenda(ILogger<GetAgenda> log, ConferenceConfig conference, KeyDatesConfig keyDates, SessionsConfig sessionsConfig)
+        {
+            this.log = log;
+            this.conference = conference;
+            this.keyDates = keyDates;
+            this.sessionsConfig = sessionsConfig;
+        }
+
+        [Function("GetAgenda")]
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
-            HttpRequest req,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindKeyDatesConfig]
-            KeyDatesConfig keyDates,
-            [BindSessionsConfig]
-            SessionsConfig sessionsConfig)
+            HttpRequest req)
         {
             if (keyDates.Before(x => x.SubmissionsAvailableToDate))
             {

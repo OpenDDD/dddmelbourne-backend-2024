@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Linq;
@@ -12,17 +11,23 @@ using System.Collections.Generic;
 
 namespace DDD.Functions
 {
-    public static class GetPrizeDraw
+    public class GetPrizeDraw
     {
-        [FunctionName("GetPrizeDraw")]
-        public static async Task<IActionResult> Run(
+        private readonly ILogger<GetPrizeDraw> log;
+        private readonly ConferenceConfig conference;
+        private readonly FeedbackConfig feedbackConfig;
+
+        public GetPrizeDraw(ILogger<GetPrizeDraw> log, ConferenceConfig conference, FeedbackConfig feedbackConfig)
+        {
+            this.log = log;
+            this.conference = conference;
+            this.feedbackConfig = feedbackConfig;
+        }
+
+        [Function("GetPrizeDraw")]
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
-            HttpRequest req,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindFeedbackConfig]
-            FeedbackConfig feedbackConfig)
+            HttpRequest req)
         {
             var (conferenceFeedbackRepo, sessionFeedbackRepo) = await feedbackConfig.GetRepositoryAsync();
             var conferenceFeedback = await conferenceFeedbackRepo.GetAllAsync(conference.ConferenceInstance);

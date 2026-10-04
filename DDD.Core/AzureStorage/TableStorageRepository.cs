@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Data.Tables;
 
 namespace DDD.Core.AzureStorage
 {
@@ -19,12 +19,11 @@ namespace DDD.Core.AzureStorage
 
     public class TableStorageRepository<T> : ITableStorageRepository<T> where T : class, ITableEntity, new()
     {
-        private readonly CloudTable _table;
+        private readonly TableClient _table;
 
-        public TableStorageRepository(CloudStorageAccount storageAccount, string tableName)
+        public TableStorageRepository(TableServiceClient client, string tableName)
         {
-            var client = storageAccount.CreateCloudTableClient();
-            _table = client.GetTableReference(tableName);
+            _table = client.GetTableClient(tableName);
         }
 
         public async Task InitializeAsync()
@@ -34,34 +33,30 @@ namespace DDD.Core.AzureStorage
 
         public async Task<T> GetAsync(string partitionKey, string rowKey)
         {
-            var record = await _table.ExecuteAsync(TableOperation.Retrieve<T>(partitionKey, rowKey));
-            return record.Result as T;
+            var record = await _table.GetEntityIfExistsAsync<T>(partitionKey, rowKey);
+            return record.HasValue ? record.Value : null;
         }
 
         public async Task<IList<T>> GetAllAsync(string partitionKey = null, string rowKey = null)
         {
-            var query = new TableQuery<T>();
-            TableQuerySegment<T> querySegment = null;
+            var filters = new List<string>();
             var returnList = new List<T>();
 
             if (partitionKey != null)
-                query = query.Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
+                filters.Add(TableClient.CreateQueryFilter($"PartitionKey eq {partitionKey}"));
 
             if (rowKey != null)
-                query = query.Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, rowKey));
+                filters.Add(TableClient.CreateQueryFilter($"RowKey eq {rowKey}"));
 
-            do
-            {
-                querySegment = await _table.ExecuteQuerySegmentedAsync(query, querySegment?.ContinuationToken);
-                returnList.AddRange(querySegment);
-            } while (querySegment.ContinuationToken != null);
+            await foreach (var entity in _table.QueryAsync<T>(filters.Count == 0 ? null : string.Join(" and ", filters)))
+                returnList.Add(entity);
 
             return returnList;
         }
 
         public async Task CreateAsync(T item)
         {
-            await _table.ExecuteAsync(TableOperation.Insert(item));
+            await _table.AddEntityAsync(item);
         }
 
         public async Task CreateBatchAsync(IList<T> batch)
@@ -74,20 +69,18 @@ namespace DDD.Core.AzureStorage
             if (batch.Any(x => x.PartitionKey != batch[0].PartitionKey))
                 throw new InvalidOperationException("Attempt to insert batch operation with records that have a mix of partition keys.");
 
-            var batchOperation = new TableBatchOperation();
-            batch.ToList().ForEach(x => batchOperation.Add(TableOperation.Insert(x)));
-            await _table.ExecuteBatchAsync(batchOperation);
+            await _table.SubmitTransactionAsync(batch.Select(x => new TableTransactionAction(TableTransactionActionType.Add, x)));
         }
 
         public async Task UpdateAsync(T item)
         {
-            await _table.ExecuteAsync(TableOperation.Replace(item));
+            await _table.UpdateEntityAsync(item, item.ETag, TableUpdateMode.Replace);
         }
 
         public async Task DeleteAsync(string partitionKey, string rowKey)
         {
             var existing = await GetAsync(partitionKey, rowKey);
-            await _table.ExecuteAsync(TableOperation.Delete(existing));
+            await _table.DeleteEntityAsync(existing.PartitionKey, existing.RowKey, existing.ETag);
         }
     }
 }

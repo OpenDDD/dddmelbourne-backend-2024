@@ -1,9 +1,10 @@
 ﻿
-using Microsoft.Azure.Cosmos.Table;
+using System.Runtime.Serialization;
+using DDD.Core.AzureStorage;
 
 namespace DDD.Core.Tito
 {
-    public class TitoTicket : TableEntity
+    public class TitoTicket : TableStorageEntity
     {
         public TitoTicket()
         {
@@ -15,6 +16,7 @@ namespace DDD.Core.Tito
             RowKey = ticketId;
         }
 
+        [IgnoreDataMember]
         public string TicketId => RowKey;
     }
 }

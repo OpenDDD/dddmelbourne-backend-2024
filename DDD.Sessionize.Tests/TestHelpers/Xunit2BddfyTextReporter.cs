@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using TestStack.BDDfy;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace DDD.Sessionize.Tests.TestHelpers
 {

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Threading.Tasks;
@@ -14,26 +13,31 @@ using Newtonsoft.Json;
 
 namespace DDD.Functions
 {
-    public static class SubmitVote
+    public class SubmitVote
     {
-        [FunctionName("SubmitVote")]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
-            HttpRequestMessage req,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindKeyDatesConfig]
-            KeyDatesConfig keyDates,
-            [BindSubmissionsConfig]
-            SubmissionsConfig submissions,
-            [BindVotingConfig]
-            VotingConfig voting,
-            [BindTitoSyncConfig]
-            TitoSyncConfig tickets
-            )
+        private readonly ILogger<SubmitVote> log;
+        private readonly ConferenceConfig conference;
+        private readonly KeyDatesConfig keyDates;
+        private readonly SubmissionsConfig submissions;
+        private readonly VotingConfig voting;
+        private readonly TitoSyncConfig tickets;
+
+        public SubmitVote(ILogger<SubmitVote> log, ConferenceConfig conference, KeyDatesConfig keyDates, SubmissionsConfig submissions, VotingConfig voting, TitoSyncConfig tickets)
         {
-            var vote = await req.Content.ReadAsAsync<VoteRequest>();
+            this.log = log;
+            this.conference = conference;
+            this.keyDates = keyDates;
+            this.submissions = submissions;
+            this.voting = voting;
+            this.tickets = tickets;
+        }
+
+        [Function("SubmitVote")]
+        public async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
+            HttpRequest req)
+        {
+            var vote = await req.ReadAsAsync<VoteRequest>();
             var ip = req.GetIpAddress();
 
             // Within voting window, allowing for 5 minutes of clock drift

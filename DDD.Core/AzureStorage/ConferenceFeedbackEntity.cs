@@ -1,9 +1,8 @@
 ﻿using System;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace DDD.Core.AzureStorage
 {
-    public class ConferenceFeedbackEntity : TableEntity
+    public class ConferenceFeedbackEntity : TableStorageEntity
     {
         public ConferenceFeedbackEntity() { }
         public ConferenceFeedbackEntity(string conferenceInstance, string name, string rating, string liked, string improvementIdeas, string deviceId)

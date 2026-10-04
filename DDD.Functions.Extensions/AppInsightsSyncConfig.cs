@@ -1,42 +1,23 @@
-﻿using System;
-using Microsoft.Azure.WebJobs.Description;
-using Microsoft.Azure.WebJobs.Host.Config;
+using Microsoft.Extensions.Configuration;
 
 namespace DDD.Functions.Extensions
 {
-    public class AppInsightsSyncConfig : Attribute
+    public class AppInsightsSyncConfig
     {
-        [AppSetting(Default = "VotesConnectionString")]
+        public AppInsightsSyncConfig(IConfiguration config)
+        {
+            ConnectionString = config["VotesConnectionString"];
+            Table = config["AppInsightsTable"];
+            ApplicationId = config["AppInsightsApplicationId"];
+            ApplicationKey = config["AppInsightsApplicationKey"];
+        }
+
         public string ConnectionString { get; set; }
 
-        [AppSetting(Default = "AppInsightsTable")]
         public string Table { get; set; }
 
-        [AppSetting(Default = "AppInsightsApplicationId")]
         public string ApplicationId { get; set; }
 
-        [AppSetting(Default = "AppInsightsApplicationKey")]
         public string ApplicationKey { get; set; }
-    }
-
-    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue)]
-    [Binding]
-    public class BindAppInsightsSyncConfigAttribute : AppInsightsSyncConfig
-    {
-    }
-
-    public class BindAppInsightsSyncConfigExtension : IExtensionConfigProvider
-    {
-        public void Initialize(ExtensionConfigContext context)
-        {
-            var rule = context.AddBindingRule<BindAppInsightsSyncConfigAttribute>();
-
-            rule.BindToInput(BuildItemFromAttr);
-        }
-
-        private AppInsightsSyncConfig BuildItemFromAttr(BindAppInsightsSyncConfigAttribute attr)
-        {
-            return attr;
-        }
     }
 }

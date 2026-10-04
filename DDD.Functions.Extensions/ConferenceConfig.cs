@@ -1,50 +1,34 @@
-﻿using System;
-using Microsoft.Azure.WebJobs.Description;
-using Microsoft.Azure.WebJobs.Host.Config;
+using System;
+using Microsoft.Extensions.Configuration;
 
 namespace DDD.Functions.Extensions
 {
-    public class ConferenceConfig : Attribute
+    public class ConferenceConfig
     {
-        [AppSetting(Default = "ConferenceInstance")]
+        public ConferenceConfig(IConfiguration config)
+        {
+            ConferenceInstance = config["ConferenceInstance"];
+            AnonymousSubmissionsAppSetting = config["AnonymousSubmissions"];
+            MinVotesSetting = config["MinVotes"];
+            MaxVotesSetting = config["MaxVotes"];
+            MinNumSessionFeedbackForPrizeDrawSetting = config["MinNumSessionFeedbackForPrizeDraw"];
+        }
+
         public string ConferenceInstance { get; set; }
 
         // Anonymous submissions
-        [AppSetting(Default = "AnonymousSubmissions")]
         public string AnonymousSubmissionsAppSetting { get; set; }
         public bool AnonymousSubmissions => AnonymousSubmissionsAppSetting != "false";
 
         // Min votes
-        [AppSetting(Default = "MinVotes")]
         public string MinVotesSetting { get; set; }
         public int MinVotes => MinVotesSetting != null ? Int32.Parse(MinVotesSetting) : 0;
 
-        [AppSetting(Default = "MaxVotes")]
         public string MaxVotesSetting { get; set; }
         public int MaxVotes => MaxVotesSetting != null ? Int32.Parse(MaxVotesSetting) : 0;
 
         // Min session feedback for prize draw
-        [AppSetting(Default = "MinNumSessionFeedbackForPrizeDraw")]
         public string MinNumSessionFeedbackForPrizeDrawSetting { get; set; }
         public int MinNumSessionFeedbackForPrizeDraw => MinNumSessionFeedbackForPrizeDrawSetting != null ? Int32.Parse(MinNumSessionFeedbackForPrizeDrawSetting) : 0;
-    }
-
-    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue)]
-    [Binding]
-    public class BindConferenceConfigAttribute : ConferenceConfig { }
-
-    public class BindConferenceConfigExtension : IExtensionConfigProvider
-    {
-        public void Initialize(ExtensionConfigContext context)
-        {
-            var rule = context.AddBindingRule<BindConferenceConfigAttribute>();
-
-            rule.BindToInput(BuildItemFromAttr);
-        }
-
-        private ConferenceConfig BuildItemFromAttr(BindConferenceConfigAttribute attr)
-        {
-            return attr;
-        }
     }
 }

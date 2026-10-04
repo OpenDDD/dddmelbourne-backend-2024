@@ -1,9 +1,10 @@
 
-using Microsoft.Azure.Cosmos.Table;
+using System.Runtime.Serialization;
+using DDD.Core.AzureStorage;
 
 namespace DDD.Core.Tito
 {
-    public class WaitingList : TableEntity
+    public class WaitingList : TableStorageEntity
     {
         public WaitingList()
         {
@@ -15,6 +16,7 @@ namespace DDD.Core.Tito
             RowKey = email;
         }
 
+        [IgnoreDataMember]
         public string Email => RowKey;
     }
 }

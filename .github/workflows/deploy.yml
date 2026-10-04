@@ -1,7 +1,7 @@
 # Docs for the Azure Functions deploy action: https://github.com/azure/functions-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy dotnet core project to Azure Function App - dddmelb-2024
+name: Build and deploy to Azure Function App - dddmelb-2024-api
 
 on:
   push:
@@ -14,13 +14,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: deploy-dddmelb-2024
+  group: deploy-dddmelb-2024-api
   cancel-in-progress: false
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'dddmelb-2024'
+  AZURE_FUNCTIONAPP_NAME: 'dddmelb-2024-api'
   PUBLISH_PATH: './publish'
-  DOTNET_VERSION: '6.0.x'
 
 jobs:
   build-and-deploy:
@@ -31,11 +30,11 @@ jobs:
 
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: global.json
 
       - run: dotnet build DDD.sln --configuration Release
 
-      - run: dotnet test DDD.Sessionize.Tests --configuration Release --no-build
+      - run: dotnet test --project DDD.Sessionize.Tests --configuration Release --no-build
 
       - run: dotnet publish DDD.Functions/DDD.Functions.csproj --configuration Release --no-build --output ${{ env.PUBLISH_PATH }}
 

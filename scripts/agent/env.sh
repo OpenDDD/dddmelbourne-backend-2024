@@ -7,7 +7,7 @@ export DOTNET_ROOT="$TOOLS/dotnet"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_NOLOGO=1
 export FUNCTIONS_CORE_TOOLS_TELEMETRY_OPTOUT=1
-export PATH="$TOOLS/dotnet:$TOOLS/npm/bin:$PATH"
+export PATH="$TOOLS/dotnet:$TOOLS/node/bin:$TOOLS/npm/bin:$PATH"
 FUNC_PORT="${FUNC_PORT:-7071}"
 BASE_URL="http://localhost:$FUNC_PORT"
 mkdir -p "$RUN"

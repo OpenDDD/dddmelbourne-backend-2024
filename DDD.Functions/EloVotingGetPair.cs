@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
@@ -18,7 +17,7 @@ using DDD.Core.EloVoting;
 
 namespace DDD.Functions
 {
-    public static class EloVotingGetPair
+    public class EloVotingGetPair
     {
         private const string DefaultSessionIdHeaderName = "X-DDDPerth-VotingSessionId";
 
@@ -42,20 +41,25 @@ namespace DDD.Functions
             return validSessionIds.ToList();
         }
 
-        [FunctionName("EloVotingGetPair")]
-        public static async Task<IActionResult> Run(
+        private readonly ILogger<EloVotingGetPair> log;
+        private readonly ConferenceConfig conference;
+        private readonly KeyDatesConfig keyDates;
+        private readonly SubmissionsConfig submissions;
+        private readonly EloVotingConfig eloVoting;
+
+        public EloVotingGetPair(ILogger<EloVotingGetPair> log, ConferenceConfig conference, KeyDatesConfig keyDates, SubmissionsConfig submissions, EloVotingConfig eloVoting)
+        {
+            this.log = log;
+            this.conference = conference;
+            this.keyDates = keyDates;
+            this.submissions = submissions;
+            this.eloVoting = eloVoting;
+        }
+
+        [Function("EloVotingGetPair")]
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
-            HttpRequest req,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindKeyDatesConfig]
-            KeyDatesConfig keyDates,
-            [BindSubmissionsConfig]
-            SubmissionsConfig submissions,
-            [BindEloVotingConfig]
-            EloVotingConfig eloVoting
-        )
+            HttpRequest req)
         {
             if (!eloVoting.EloEnabled)
             {

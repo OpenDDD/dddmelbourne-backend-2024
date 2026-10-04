@@ -1,9 +1,9 @@
 ﻿using System;
-using Microsoft.Azure.Cosmos.Table;
+using System.Runtime.Serialization;
 
 namespace DDD.Core.AzureStorage
 {
-    public class NotifiedSessionEntity : TableEntity
+    public class NotifiedSessionEntity : TableStorageEntity
     {
         public NotifiedSessionEntity() {}
 
@@ -13,6 +13,7 @@ namespace DDD.Core.AzureStorage
             RowKey = Guid.NewGuid().ToString();
         }
 
+        [IgnoreDataMember]
         public Guid Id => Guid.Parse(PartitionKey);
     }
 }

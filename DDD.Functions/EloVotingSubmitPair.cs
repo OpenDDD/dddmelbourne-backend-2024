@@ -1,6 +1,6 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Threading.Tasks;
@@ -12,22 +12,27 @@ using DDD.Core.EloVoting;
 
 namespace DDD.Functions
 {
-    public static class EloVotingSubmitPair
+    public class EloVotingSubmitPair
     {
-        [FunctionName("EloVotingSubmitPair")]
-        public static async Task<IActionResult> Run(
+        private readonly ILogger<EloVotingSubmitPair> log;
+        private readonly ConferenceConfig conference;
+        private readonly KeyDatesConfig keyDates;
+        private readonly SubmissionsConfig submissions;
+        private readonly EloVotingConfig eloVoting;
+
+        public EloVotingSubmitPair(ILogger<EloVotingSubmitPair> log, ConferenceConfig conference, KeyDatesConfig keyDates, SubmissionsConfig submissions, EloVotingConfig eloVoting)
+        {
+            this.log = log;
+            this.conference = conference;
+            this.keyDates = keyDates;
+            this.submissions = submissions;
+            this.eloVoting = eloVoting;
+        }
+
+        [Function("EloVotingSubmitPair")]
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
-            HttpRequestMessage req,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindKeyDatesConfig]
-            KeyDatesConfig keyDates,
-            [BindSubmissionsConfig]
-            SubmissionsConfig submissions,
-            [BindEloVotingConfig]
-            EloVotingConfig eloVoting
-        )
+            HttpRequest req)
         {
             if (!eloVoting.EloEnabled)
             {
@@ -35,7 +40,7 @@ namespace DDD.Functions
                 return new StatusCodeResult((int)HttpStatusCode.BadRequest);
             }
 
-            var vote = await req.Content.ReadAsAsync<EloVoteRequest>();
+            var vote = await req.ReadAsAsync<EloVoteRequest>();
             var ip = req.GetIpAddress();
             var conferenceYear = conference.ConferenceInstance;
 

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using DDD.Core.AzureStorage;
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Data.Tables;
 
 namespace DDD.Sessionize.Tests.TestHelpers
 {

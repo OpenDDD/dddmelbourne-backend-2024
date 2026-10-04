@@ -4,27 +4,32 @@ using DDD.Core.Time;
 using DDD.Functions.Extensions;
 using DDD.Sessionize.Sessionize;
 using DDD.Sessionize.Sync;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
 namespace DDD.Functions
 {
-    public static class SessionizeReadModelSync
+    public class SessionizeReadModelSync
     {
-        [FunctionName("SessionizeReadModelSync")]
-        public static async Task Run(
+        private readonly ILogger<SessionizeReadModelSync> log;
+        private readonly ConferenceConfig conference;
+        private readonly KeyDatesConfig keyDates;
+        private readonly SubmissionsConfig submissions;
+        private readonly SessionizeSyncConfig sessionize;
+
+        public SessionizeReadModelSync(ILogger<SessionizeReadModelSync> log, ConferenceConfig conference, KeyDatesConfig keyDates, SubmissionsConfig submissions, SessionizeSyncConfig sessionize)
+        {
+            this.log = log;
+            this.conference = conference;
+            this.keyDates = keyDates;
+            this.submissions = submissions;
+            this.sessionize = sessionize;
+        }
+
+        [Function("SessionizeReadModelSync")]
+        public async Task Run(
             [TimerTrigger("%SessionizeReadModelSyncSchedule%")]
-            TimerInfo timer,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindKeyDatesConfig]
-            KeyDatesConfig keyDates,
-            [BindSubmissionsConfig]
-            SubmissionsConfig submissions,
-            [BindSessionizeSyncConfig]
-            SessionizeSyncConfig sessionize
-        )
+            TimerInfo timer)
         {
             if (keyDates.After(x => x.StopSyncingSessionsFromDate))
             {

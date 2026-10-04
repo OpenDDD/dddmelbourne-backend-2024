@@ -1,8 +1,6 @@
-﻿using Microsoft.Azure.Cosmos.Table;
-
-namespace DDD.Core.AzureStorage
+﻿namespace DDD.Core.AzureStorage
 {
-    public class DedupeWebhookEntity : TableEntity
+    public class DedupeWebhookEntity : TableStorageEntity
     {
         public DedupeWebhookEntity() {}
 

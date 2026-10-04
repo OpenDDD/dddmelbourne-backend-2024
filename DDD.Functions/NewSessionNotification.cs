@@ -4,26 +4,32 @@ using System.Text;
 using System.Threading.Tasks;
 using DDD.Core.AzureStorage;
 using DDD.Functions.Extensions;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace DDD.Functions
 {
-    public static class NewSessionNotification
+    public class NewSessionNotification
     {
-        [FunctionName("NewSessionNotification")]
-        public static async Task Run(
+        private readonly ILogger<NewSessionNotification> log;
+        private readonly ConferenceConfig conference;
+        private readonly NewSessionNotificationConfig newSessionNotification;
+        private readonly SubmissionsConfig submissions;
+
+        public NewSessionNotification(ILogger<NewSessionNotification> log, ConferenceConfig conference, NewSessionNotificationConfig newSessionNotification, SubmissionsConfig submissions)
+        {
+            this.log = log;
+            this.conference = conference;
+            this.newSessionNotification = newSessionNotification;
+            this.submissions = submissions;
+        }
+
+        [Function("NewSessionNotification")]
+        public async Task Run(
             [TimerTrigger("%NewSessionNotificationSchedule%")]
-            TimerInfo timer,
-            ILogger log,
-            [BindConferenceConfig]
-            ConferenceConfig conference,
-            [BindNewSessionNotificationConfig]
-            NewSessionNotificationConfig newSessionNotification,
-            [BindSubmissionsConfig]
-            SubmissionsConfig submissions)
+            TimerInfo timer)
         {
             var (submissionsRepo, submittersRepo) = await submissions.GetRepositoryAsync();
             var notifiedSessionsRepo = await newSessionNotification.GetRepositoryAsync();

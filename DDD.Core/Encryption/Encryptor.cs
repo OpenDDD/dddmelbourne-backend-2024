@@ -27,17 +27,15 @@ public class Encryptor
     private static byte[] GenerateValidKey(byte[] keyBytes)
     {
         byte[] ret = new byte[MAX_KEY_LENGTH];
-        byte[] hash = new SHA256Managed().ComputeHash(keyBytes);
+        byte[] hash = SHA256.HashData(keyBytes);
         Array.Copy(hash, ret, MAX_KEY_LENGTH);
         return ret;
     }
 
     private static byte[] EncryptRaw(byte[] PlainBytes, byte[] Key)
     {
-        AesManaged AesAlgorithm = new AesManaged()
-        {
-            Key = GenerateValidKey(Key)
-        };
+        using Aes AesAlgorithm = Aes.Create();
+        AesAlgorithm.Key = GenerateValidKey(Key);
         AesAlgorithm.GenerateIV();
         var Encrypted = AesAlgorithm.CreateEncryptor().TransformFinalBlock(PlainBytes, 0, PlainBytes.Length);
         byte[] ret = new byte[Encrypted.Length + MAX_IV_LENGTH];
@@ -48,10 +46,8 @@ public class Encryptor
 
     private static byte[] DecryptRaw(byte[] CipherBytes, byte[] Key)
     {
-        AesManaged AesAlgorithm = new AesManaged()
-        {
-            Key = GenerateValidKey(Key)
-        };
+        using Aes AesAlgorithm = Aes.Create();
+        AesAlgorithm.Key = GenerateValidKey(Key);
         byte[] IV = new byte[MAX_IV_LENGTH];
         Array.Copy(CipherBytes, CipherBytes.Length - MAX_IV_LENGTH, IV, 0, MAX_IV_LENGTH);
         AesAlgorithm.IV = IV;
