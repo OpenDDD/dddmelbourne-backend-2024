@@ -85,7 +85,7 @@ The logs are in `.local-run/func.log` and `.local-run/azurite.log`.
 
 ## Infrastructure Prerequisites
 
-The backend application depends on programmatic access to the [Frontend Website's](https://github.com/dddwa/dddperth-website) Application Insights to pull and store information on voting behavior.
+The backend application depends on programmatic access to the [Frontend Website's](https://github.com/OpenDDD/dddmelbourne-website-2024) Application Insights to pull and store information on voting behavior.
 
 To supply this access, create an API key with `Read telemetry` permissions within the frontend website's Application Insights instance in the Azure Portal, and enter the Application ID and Key presented into the `AppInsightsApplicationId` and `AppInsightsApplicationKey` parameters.
 
@@ -94,7 +94,7 @@ To supply this access, create an API key with `Read telemetry` permissions withi
 * `UserVotingSessionsConnectionString`: connection string of the Cosmos DB NoSQL account that keeps the Elo voting sessions
 * `UserVotingSessionsDatabaseId`: database name in that account
 * `UserVotingSessionsContainerId`: container name in that database
-* `UserVotingSessionHeaderName`: name of the request header that holds the voting session ID. If you do not set it, the API uses `X-DDDPerth-VotingSessionId`.
+* `UserVotingSessionHeaderName`: name of the request header that holds the voting session ID. If you do not set it, the API uses `X-DDDMelbourne-VotingSessionId`.
 * `UserVotingSessionTtlSeconds`: time to live of a voting session, in seconds. If you do not set it, the API uses `259200` (3 days).
 
 ## Deployment

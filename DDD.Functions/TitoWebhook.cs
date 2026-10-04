@@ -233,7 +233,7 @@ namespace DDD.Functions
  *    {
  *      "created_at": "2019-04-23T15:30:43.953Z",
  *      "text": " <> has started to register",
- *      "url": "https://ti.to/dddperth/committee-meeting/registrations/pbTMJEedGbEivL6F5D61Yzg",
+ *      "url": "https://ti.to/ddd-melbourne/committee-meeting/registrations/pbTMJEedGbEivL6F5D61Yzg",
  *      "slug": "pbTMJEedGbEivL6F5D61Yzg",
  *      "custom": "",
  *      "line_items": [
@@ -251,12 +251,12 @@ namespace DDD.Functions
  *  * registration.finished (when finished filling your details - name and email)
  *    {
  *      "id": 4997470,
- *      "text": "Rob Moore \u003crob.moore@readify.net\u003e registered 1 ticket https://ti.to/dddperth/committee-meeting/admin/registrations/pbTMJEedGbEivL6F5D61Yzg",
+ *      "text": "Rob Moore \u003crob.moore@readify.net\u003e registered 1 ticket https://ti.to/ddd-melbourne/committee-meeting/admin/registrations/pbTMJEedGbEivL6F5D61Yzg",
  *      "event": {
  *        "id": 1079307,
  *        "title": "committee meeting",
- *        "url": "https://ti.to/dddperth/committee-meeting",
- *        "account_slug": "dddperth",
+ *        "url": "https://ti.to/ddd-melbourne/committee-meeting",
+ *        "account_slug": "ddd-melbourne",
  *        "slug": "committee-meeting",
  *        "start_date": "2019-08-03",
  *        "end_date": "2019-08-03",
@@ -333,7 +333,7 @@ namespace DDD.Functions
  *          "company_name": null,
  *          "email": null,
  *          "url": "https://ti.to/tickets/ppaxzZ0Ck1aRuvwUOZihJfg",
- *          "admin_url": "https://ti.to/dddperth/committee-meeting/admin/tickets/ppaxzZ0Ck1aRuvwUOZihJfg",
+ *          "admin_url": "https://ti.to/ddd-melbourne/committee-meeting/admin/tickets/ppaxzZ0Ck1aRuvwUOZihJfg",
  *          "responses": null,
  *          "answers": [
  *            
@@ -359,8 +359,8 @@ namespace DDD.Functions
  *      "event": {
  *        "id": 1079307,
  *        "title": "committee meeting",
- *        "url": "https://ti.to/dddperth/committee-meeting",
- *        "account_slug": "dddperth",
+ *        "url": "https://ti.to/ddd-melbourne/committee-meeting",
+ *        "account_slug": "ddd-melbourne",
  *        "slug": "committee-meeting",
  *        "currency": "AUD",
  *        "start_date": "2019-08-03",
@@ -385,7 +385,7 @@ namespace DDD.Functions
  *      "total_paid_less_tax": "0.00",
  *      "updated_at": "2019-04-23T15:51:12.422Z",
  *      "url": "https://ti.to/tickets/p0oR6QJehlzYdduZw5GMq4w",
- *      "admin_url": "https://ti.to/dddperth/committee-meeting/admin/tickets/p0oR6QJehlzYdduZw5GMq4w",
+ *      "admin_url": "https://ti.to/ddd-melbourne/committee-meeting/admin/tickets/p0oR6QJehlzYdduZw5GMq4w",
  *      "release_title": "Childcare",
  *      "release_slug": "m75-uimyfou",
  *      "release_id": 1178292,
@@ -428,7 +428,7 @@ namespace DDD.Functions
  *      ],
  *      "registration": {
  *        "url": "https://ti.to/registrations/pKNKp039KHDYqJSp3j3wVRQ",
- *        "admin_url": "https://ti.to/dddperth/committee-meeting/admin/registrations/pKNKp039KHDYqJSp3j3wVRQ",
+ *        "admin_url": "https://ti.to/ddd-melbourne/committee-meeting/admin/registrations/pKNKp039KHDYqJSp3j3wVRQ",
  *        "total": "0.00",
  *        "currency": "AUD",
  *        "payment_reference": null,
