@@ -4,12 +4,7 @@ This project contains backend functionality to run the DDD conferences, includin
 
 * Syncing data from [Sessionize](https://sessionize.com/) to Azure Table Storage (tenanted by conference year) for submitted sessions (and submitters) and separate to that, selected sessions (and presenters)
 * APIs that return submission and session (agenda) information during allowed times
-* APIs to facilitate voting by the community against (optionally anonymous) submitted sessions (notes stored to Azure Table Storage tenanted by conference year) including various mechanisms to detect fraud
-* Syncing Tito order IDs and Azure App Insights voting user IDs to assist with voting fraud detection and validation
-* API to return analysed voting information
-* Ability to trigger an Azure Logic App when a new session is detected from Sessionize (which can then be used to create Microsoft Teams / Slack notifications for visibility to the organising committee and/or to trigger moderation actions)
-* Tito webhook to take order notifications, de-duplicate them and place them in queue storage so they can be picked up by a Logic App (or similar) to do things like create Microsoft Teams / Slack notifications for visibility to the organising committee
-* Getting feedback information and prize draw names
+* APIs to facilitate Elo-style voting by the community between (optionally anonymous) submitted sessions (stored in Azure Table Storage tenanted by conference year)
 
 ## Run locally
 
