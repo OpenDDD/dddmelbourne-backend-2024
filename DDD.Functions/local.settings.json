@@ -68,14 +68,6 @@
     "AppInsightsApplicationKey": "{key}",
     "StartSyncingAppInsightsFrom": "2018-06-05T08:00:00+08:00",
     "StopSyncingAppInsightsFrom": "2018-06-18T23:59:59+08:00",
-    // Feedback
-    "FeedbackConnectionString": "UseDevelopmentStorage=true",
-    "SessionFeedbackTable": "SessionFeedback",
-    "ConferenceFeedbackTable": "ConferenceFeedback",
-    "IsSingleVoteEligibleForPrizeDraw": "true",
-    "MinNumSessionFeedbackForPrizeDraw": "4",
-    "FeedbackAvailableFrom": "2018-08-03T08:00:00+08:00",
-    "FeedbackAvailableTo": "2019-08-03T05:00:00+08:00",
     // getAgendaSchedule
     "AgendaScheduleConnectionString": "AgendaScheduleConnectionString",
     "AgendaScheduleContainer": "agenda-schedule"

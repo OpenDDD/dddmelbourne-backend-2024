@@ -13,7 +13,7 @@ namespace DDD.Core.AzureStorage
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
 
-        // GetVotes returns Vote entities as JSON, and Microsoft.Azure.Cosmos.Table exposed the ETag as a string.
+        // Preserve the string representation returned by the previous table SDK.
         [JsonConverter(typeof(ETagJsonConverter))]
         public ETag ETag { get; set; }
     }

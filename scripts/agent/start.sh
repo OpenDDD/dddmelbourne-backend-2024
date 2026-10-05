@@ -15,8 +15,6 @@ export AgendaScheduleConnectionString="UseDevelopmentStorage=true"
 # PHASE=voting (default): submissions open, agenda closed. PHASE=agenda: submissions closed, agenda open.
 if [[ "${PHASE:-voting}" == "agenda" ]]; then export SubmissionsAvailableTo="2000-01-02T00:00:00+00:00"; else export SubmissionsAvailableTo="2099-12-31T00:00:00+00:00"; fi
 export VotingAvailableTo="2099-12-31T00:00:00+00:00"
-export FeedbackAvailableFrom="2000-01-01T00:00:00+00:00"
-export FeedbackAvailableTo="2099-12-31T00:00:00+00:00"
 
 cd "$ROOT/DDD.Functions"
 nohup func host start --port "$FUNC_PORT" --verbose >"$RUN/func.log" 2>&1 &

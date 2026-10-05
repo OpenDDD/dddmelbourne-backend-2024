@@ -30,18 +30,17 @@ To change a different setting, change it on the app. The next deploy keeps it.
 ## Cutover
 
 1. Merge to `master`. The workflow deploys the code to `dddmelb-2024-api`.
-2. Copy the function keys of `GetFeedback`, `GetPrizeDraw`, `GetVotes` and `TitoWebhook` from `dddmelb-2024`. Callers such as the Tito webhook use these keys.
-3. Smoke-test `https://dddmelb-2024-api.azurewebsites.net`:
-   - Run `az functionapp function list -g dddmelb-2024 -n dddmelb-2024-api` and make sure all 16 functions show. Read the host logs in Application Insights for indexing errors.
+2. Smoke-test `https://dddmelb-2024-api.azurewebsites.net`:
+   - Run `az functionapp function list -g dddmelb-2024 -n dddmelb-2024-api` and make sure all 7 functions show. Read the host logs in Application Insights for indexing errors.
    - Submit one test vote. Make sure the stored `IpAddress` is the client IP, not an Azure internal address. The Functions host can change `X-Forwarded-For` before the worker gets the request.
-4. In Cloudflare, add these records for `api.dddmelbourne.com`. Set the proxy status to DNS only.
+3. In Cloudflare, add these records for `api.dddmelbourne.com`. Set the proxy status to DNS only.
    - `CNAME api` to `dddmelb-2024-api.azurewebsites.net`
    - `TXT asuid.api` with the `customDomainVerificationId` output of `deploy.sh`
-5. On `dddmelb-2024`, disable the timer functions `SessionizeAgendaSync` and `SessionizeReadModelSync`.
-6. In `main.bicepparam`, set `customDomain = 'api.dddmelbourne.com'` and `enableTimers = true`. Then run `infra/deploy.sh`. This deploy issues the managed certificate.
+4. On `dddmelb-2024`, disable the timer functions `SessionizeAgendaSync` and `SessionizeReadModelSync`.
+5. In `main.bicepparam`, set `customDomain = 'api.dddmelbourne.com'` and `enableTimers = true`. Then run `infra/deploy.sh`. This deploy issues the managed certificate.
    - Then set `customDomainCertificateIssued = true` and commit. Later deploys then keep SSL on for the custom domain.
-7. Change the website to use `https://api.dddmelbourne.com`.
-8. When the old app has no traffic, remove the old resources:
+6. Change the website to use `https://api.dddmelbourne.com`.
+7. When the old app has no traffic, remove the old resources:
    - Remove the Website Contributor role of `github-backend` on `dddmelb-2024`.
    - Delete the GitHub secret `AZUREAPPSERVICE_PUBLISHPROFILE_33B4EA0901904CE49CD9226DB143C43F`.
    - Delete the Function App `dddmelb-2024` and its plan `ASP-dddmelb2024-97b7`.
