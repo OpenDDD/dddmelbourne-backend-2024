@@ -9,8 +9,12 @@ CHECKS=(
   "GetAgenda (closed while submissions open)|GET|/api/GetAgenda||404"
   "GetAgendaSchedule (no blob yet)|GET|/api/GetAgendaSchedule||404"
   "GetSubmissions|GET|/api/GetSubmissions||200"
-  "SubmitVote (empty body is rejected)|POST|/api/SubmitVote|{}|400"
-  "SubmitFeedback (empty body is rejected)|POST|/api/SubmitFeedback|{}|400"
+  "Removed GetPrizeDraw endpoint|GET|/api/GetPrizeDraw||404"
+  "Removed GetFeedback endpoint|GET|/api/GetFeedback||404"
+  "Removed GetVotes endpoint|GET|/api/GetVotes||404"
+  "Removed SubmitFeedback endpoint|POST|/api/SubmitFeedback|{}|404"
+  "Removed SubmitVote endpoint|POST|/api/SubmitVote|{}|404"
+  "Removed TitoWebhook endpoint|POST|/api/TitoWebhook|{}|404"
   "EloVotingGetPair (no session cookie)|GET|/api/EloVotingGetPair||400"
   "Unknown route returns 404|GET|/api/DoesNotExist||404"
 )
@@ -19,6 +23,12 @@ if [[ "${PHASE:-voting}" == "agenda" ]]; then
   CHECKS=(
     "GetAgenda|GET|/api/GetAgenda||200"
     "GetSubmissions (closed)|GET|/api/GetSubmissions||404"
+    "Removed GetPrizeDraw endpoint|GET|/api/GetPrizeDraw||404"
+    "Removed GetFeedback endpoint|GET|/api/GetFeedback||404"
+    "Removed GetVotes endpoint|GET|/api/GetVotes||404"
+    "Removed SubmitFeedback endpoint|POST|/api/SubmitFeedback|{}|404"
+    "Removed SubmitVote endpoint|POST|/api/SubmitVote|{}|404"
+    "Removed TitoWebhook endpoint|POST|/api/TitoWebhook|{}|404"
     "Unknown route returns 404|GET|/api/DoesNotExist||404"
   )
 fi
@@ -36,13 +46,13 @@ for c in "${CHECKS[@]}"; do
 done
 
 # Functions indexed by the host
-for fn in GetAgenda GetSubmissions SubmitVote TitoWebhook SessionizeReadModelSync; do
+for fn in GetAgenda GetSubmissions SessionizeReadModelSync; do
   if grep -q "$fn" "$RUN/func.log"; then echo "PASS indexed $fn"; else echo "FAIL not indexed $fn"; fail=1; fi
 done
 
 # Timer syncs hit external APIs/Cosmos and are expected to fail locally.
 unexpected="$(grep -E "Exception while executing function" "$RUN/func.log" \
-  | grep -vE "Sessionize|Tito|AppInsights|Cosmos|NewSessionNotification" || true)"
+  | grep -vE "Sessionize|Cosmos" || true)"
 if [[ -n "$unexpected" ]]; then
   echo "FAIL host log contains unexpected function exceptions:"
   echo "$unexpected" | head -5; fail=1
