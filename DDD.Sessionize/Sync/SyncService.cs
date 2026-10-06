@@ -18,6 +18,8 @@ namespace DDD.Sessionize.Sync
 
             log.LogInformation("Retrieved {sessionCount} sessions, {presenterCount} presenters from Sessionize API {sessionizeApiUrl}", sessionizeData.Sessions.Length, sessionizeData.Speakers.Length, apiClient.GetUrl());
 
+            ExcludeDeclinedSessions(sessionizeData, log);
+
             var sourceData = SessionizeAdapter.SessionizeAdapter.Convert(sessionizeData, dateTimeProvider);
 
             log.LogInformation("Sessionize data successfully adapted to DDD domain model: {sessionCount} sessions and {presenterCount} presenters", sourceData.Item1.Length, sourceData.Item2.Length);
@@ -28,6 +30,29 @@ namespace DDD.Sessionize.Sync
             log.LogInformation("Existing read model retrieved: {sessionCount} sessions and {presenterCount} presenters", destinationSessions.Length, destinationPresenters.Length);
 
             await PerformSync(conferenceInstance, sessionRepo, presenterRepo, sourceData.Item1, sourceData.Item2, destinationSessions, destinationPresenters, log, dateTimeProvider);
+        }
+
+        private static readonly string[] ExcludedSessionStatuses = { "Declined", "Decline_Queue" };
+
+        private static void ExcludeDeclinedSessions(SessionizeResponse sessionizeData, ILogger log)
+        {
+            var declinedSessionIds = sessionizeData.Sessions
+                .Where(s => ExcludedSessionStatuses.Contains(s.Status, StringComparer.OrdinalIgnoreCase))
+                .Select(s => s.Id)
+                .ToArray();
+            if (!declinedSessionIds.Any())
+                return;
+
+            // Drop speakers whose only sessions are declined; keep speakers with at least one remaining session
+            var declinedSpeakerIds = sessionizeData.Speakers
+                .Where(sp => sp.SessionIds.Any() && sp.SessionIds.All(declinedSessionIds.Contains))
+                .Select(sp => sp.Id)
+                .ToArray();
+
+            sessionizeData.Sessions = sessionizeData.Sessions.Where(s => !declinedSessionIds.Contains(s.Id)).ToArray();
+            sessionizeData.Speakers = sessionizeData.Speakers.Where(sp => !declinedSpeakerIds.Contains(sp.Id)).ToArray();
+
+            log.LogInformation("Excluded {declinedSessionCount} declined sessions and {declinedPresenterCount} presenters with only declined sessions: {declinedSessionIds}", declinedSessionIds.Length, declinedSpeakerIds.Length, (object)declinedSessionIds);
         }
 
         private static async Task PerformSync(string conferenceInstance,

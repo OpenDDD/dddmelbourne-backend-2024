@@ -7,6 +7,7 @@ namespace DDD.Sessionize.Sessionize
         public SessionizeSpeaker()
         {
             Links = new SessionizeSpeakerLink[0];
+            SessionIds = new string[0];
         }
 
         public string Id { get; set; }
@@ -17,6 +18,8 @@ namespace DDD.Sessionize.Sessionize
         public string ProfilePictureUrl { get; set; }
 
         public SessionizeSpeakerLink[] Links { get; set; }
+        [JsonProperty("sessions")]
+        public string[] SessionIds { get; set; }
         [JsonProperty("categoryItems")]
         public int[] CategoryItemIds { get; set; }
 
