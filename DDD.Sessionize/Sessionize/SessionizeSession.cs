@@ -14,6 +14,7 @@ namespace DDD.Sessionize.Sessionize
         public string Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public string Status { get; set; }
 
         [JsonProperty("speakers")]
         public string[] SpeakerIds { get; set; }

@@ -1,0 +1,17 @@
+[
+  {
+    "Id": "00000000-0000-0000-0000-000000000003",
+    "ExternalId": "14093",
+    "Title": "Sophia's Session",
+    "Abstract": "Usually, you would find a session description here. But, this is not a real session submission, so description is missing. Ha!",
+    "PresenterIds": [
+      "00000000-0000-0000-0000-000000000000"
+    ],
+    "CreatedDate": "2010-01-01T00:00:00+00:00",
+    "ModifiedDate": null,
+    "Format": null,
+    "Level": null,
+    "Tags": [],
+    "DataFields": {}
+  }
+]
