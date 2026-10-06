@@ -32,7 +32,8 @@ namespace DDD.Functions
         [Function("EloVotingSubmitPair")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
-            HttpRequest req)
+            HttpRequest req,
+            FunctionContext context)
         {
             if (!eloVoting.EloEnabled)
             {
@@ -41,7 +42,7 @@ namespace DDD.Functions
             }
 
             var vote = await req.ReadAsAsync<EloVoteRequest>();
-            var ip = req.GetIpAddress();
+            var ip = req.GetIpAddress(context.BindingContext.BindingData);
             var conferenceYear = conference.ConferenceInstance;
 
             // Within voting window, allowing for 5 minutes of clock drift
